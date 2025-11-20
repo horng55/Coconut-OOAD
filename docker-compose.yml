@@ -1,0 +1,44 @@
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: school_management_db
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-school_management}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - school_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: school_management_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - school_network
+    command: redis-server --appendonly yes
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  school_network:
+    driver: bridge

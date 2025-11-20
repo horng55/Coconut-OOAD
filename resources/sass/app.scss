@@ -1,0 +1,30 @@
+@font-face {
+    font-family: "Khmer OS Moul";
+    src: local("Moul"), local("Moul"), url(../../public/assets/fonts/Moul-Regular.ttf) format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Khmer OS Battambang";
+    src: local("Battambang"), local("Battambang"), url(../../public/assets/fonts/Battambang-Regular.ttf) format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+.font-khmer-Battambang {
+    font-family: "Khmer OS Battambang", "Roboto", sans-serif;
+}
+
+.font-khmer-Moul {
+    font-family: "Khmer OS Moul", "Roboto", sans-serif;
+}
+
+body, h1, h2, h3, h4, h5, h6, p, span {
+    font-family: "Inter", "Arial", sans-serif;
+}
+
+/* Fallback for other elements using Inter */
+.font-inter {
+    font-family: "Inter", sans-serif;
+}
