@@ -74,9 +74,9 @@ class ClassModel extends Model
         return $this->hasMany(Assessment::class, 'class_id');
     }
 
-    public function timetables()
+    public function assignments()
     {
-        return $this->hasMany(Timetable::class, 'class_id');
+        return $this->hasMany(Assignment::class, 'class_id');
     }
 
     public function promotionsFrom()

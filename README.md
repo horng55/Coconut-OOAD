@@ -13,7 +13,6 @@ A comprehensive school management system built with Laravel 11 and Vue.js (Inert
 - **Attendance**: Track student attendance (admin and teacher can manage)
 - **Grading**: Record and manage student grades linked to assessments
 - **Assessments**: Create and manage assessments (Quiz, Assignment, Mid-Term, Final Exam) for classes
-- **Timetable Management**: Create and manage class schedules with time conflict detection
 - **Promotion Management**: Promote students between classes (individual and bulk promotions with approval workflow)
 - **Report Management**: Generate comprehensive reports including:
   - Student Performance Reports
@@ -44,7 +43,6 @@ A comprehensive school management system built with Laravel 11 and Vue.js (Inert
 - **Teacher Portal**: Enhanced portal with:
   - Dashboard overview of assigned classes, recent attendance, and grades
   - Class management with student lists
-  - Timetable viewing for assigned classes
   - Assessment creation and management
   - Attendance recording and editing
   - Grade management with automatic validation
@@ -54,7 +52,6 @@ A comprehensive school management system built with Laravel 11 and Vue.js (Inert
   - Class viewing with teachers and subjects
   - Attendance records viewing
   - Grade viewing linked to assessments
-  - Timetable viewing for enrolled classes
   - Announcement viewing
 - **Parent Portal**: Enhanced portal with:
   - Dashboard overview of children's information
@@ -264,12 +261,12 @@ make clear
 school-management-system/
 ├── app/
 │   ├── Http/Controllers/
-│   │   ├── Web/Admin/        # Admin controllers (Users, Classes, Subjects, Timetables, Promotions, Reports, etc.)
+│   │   ├── Web/Admin/        # Admin controllers (Users, Classes, Subjects, Promotions, Reports, etc.)
 │   │   ├── Web/Teacher/      # Teacher controllers (Dashboard, Grades, Attendance, Assessments)
 │   │   ├── Web/Student/      # Student controllers (Dashboard, View-only)
 │   │   ├── Web/Parent/       # Parent controllers (Dashboard, View-only)
 │   │   └── Web/Auth/         # Authentication controllers
-│   ├── Models/               # Eloquent models (User, Teacher, Student, Class, Timetable, Promotion, Report, etc.)
+│   ├── Models/               # Eloquent models (User, Teacher, Student, Class, Promotion, Report, etc.)
 │   ├── Plugin/               # Plugin system (AdminSidebar, etc.)
 │   └── Support/              # Support classes (FlashMessage, etc.)
 ├── database/
@@ -308,7 +305,6 @@ The system includes the following main entities:
 - **Attendances**: Student attendance records
 - **Assessments**: Assessment information (type, name, score, max_score, date) linked to classes
 - **Grades**: Student grade records linked to assessments
-- **Timetables**: Class schedule/timetable entries with day, time, room, and academic year
 - **Promotions**: Student promotion records tracking class transitions and academic year changes
 - **Reports**: Generated report records with parameters and status tracking
 - **ID Cards**: ID card information for students and teachers
@@ -337,7 +333,6 @@ The system includes the following main entities:
 - **Attendance Management**: View and manage all attendance records
 - **Grade Management**: View and manage all grades, create/edit grades
 - **Assessment Management**: View all assessments created by teachers
-- **Timetable Management**: Create and manage class schedules with time conflict detection
 - **Promotion Management**: Promote students between classes (individual and bulk), approve/reject promotions
 - **Report Management**: Generate and view various reports (student performance, class performance, attendance, grade distribution, teacher workload, enrollment)
 - **ID Card Management**: Generate and manage ID cards for students and teachers
@@ -356,7 +351,6 @@ The system includes the following main entities:
 - **Enhanced Dashboard**: Overview of assigned classes, recent attendance, and grades
 - **Class Management**: View assigned classes with student lists and multiple subjects
 - **Student Management**: View and manage students in assigned classes
-- **Timetable Management**: View timetables for assigned classes
 - **Assessment Management**: Create, edit, and delete assessments (Quiz, Assignment, Mid-Term, Final Exam) for assigned classes
 - **Attendance Management**: Record and edit attendance for students in assigned classes
 - **Grade Management**: Create and edit grades linked to assessments, with automatic validation against assessment maximum scores
@@ -368,7 +362,6 @@ The system includes the following main entities:
 - **Classes**: View enrolled classes with teachers and subjects
 - **Attendance**: View own attendance records with detailed history
 - **Grades**: View own grades linked to assessments with performance metrics
-- **Timetable**: View personal timetable for enrolled classes
 - **Announcements**: View announcements targeted to students
 - **Messaging**: Send and receive messages with teachers, parents, and other students
 
@@ -407,12 +400,6 @@ Key environment variables (see `.env.example` for full list):
 - Grades are linked to assessments, ensuring consistency and validation
 - Student scores are automatically validated against assessment maximum scores
 - Admin can view all assessments across the system
-
-### Timetable Management
-- Create and manage class schedules with day, time, room, and academic year
-- Automatic time conflict detection prevents overlapping schedules
-- Filter by class, day, academic year, and status
-- Support for multiple subjects and teachers per class schedule
 
 ### Promotion Management
 - Individual student promotions with approval workflow

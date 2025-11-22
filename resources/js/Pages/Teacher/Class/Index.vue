@@ -39,6 +39,16 @@ const handleSearch = () => {
                         </h1>
                         <p class="text-gray-500 dark:text-gray-400 mt-2">View all your assigned classes</p>
                     </div>
+                    <Link
+                        :href="route('teacher.classes.create')"
+                        class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+                    >
+                        <i class="fas fa-plus"></i>
+                        Create Class
+                    </Link>
+                </div>
+                
+                <div class="flex flex-col md:flex-row items-start md:items-center gap-3 mb-6">
                     <div class="flex items-center gap-3 w-full md:w-auto">
                         <input
                             v-model="searchQuery"

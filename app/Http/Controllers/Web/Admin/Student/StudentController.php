@@ -6,8 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\ParentUser;
+use App\Models\ClassModel;
+use App\Models\Enrollment;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class StudentController extends Controller
@@ -35,16 +39,27 @@ class StudentController extends Controller
 
     public function create()
     {
-        $parents = ParentUser::with('user')->get()->map(function ($parent) {
-            return [
-                'id' => $parent->id,
-                'name' => $parent->user->full_name,
-                'email' => $parent->user->email,
-            ];
-        });
+        $classes = ClassModel::where('status', 'active')
+            ->select('id', 'name', 'code', 'academic_year')
+            ->orderBy('name')
+            ->get();
+
+        $teachers = Teacher::where('status', 'active')
+            ->with('user:id,first_name,last_name,email')
+            ->get()
+            ->map(function ($teacher) {
+                return [
+                    'id' => $teacher->id,
+                    'name' => $teacher->user->full_name,
+                    'email' => $teacher->user->email,
+                    'employee_id' => $teacher->employee_id,
+                    'subject_specialization' => $teacher->subject_specialization,
+                ];
+            });
 
         return Inertia::render('Admin/Student/Create', [
-            'parents' => $parents,
+            'classes' => $classes,
+            'teachers' => $teachers,
         ]);
     }
 
@@ -57,37 +72,87 @@ class StudentController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'student_id' => 'required|string|unique:students,student_id',
-            'parent_id' => 'nullable|exists:parents,id',
             'admission_date' => 'required|date',
             'gender' => 'nullable|in:male,female,other',
             'phone_number' => 'nullable|string|max:20',
             'medical_info' => 'nullable|string',
+            'class_ids' => 'nullable|array',
+            'class_ids.*' => 'exists:classes,id',
+            'teacher_ids' => 'nullable|array',
+            'teacher_ids.*' => 'exists:teachers,id',
         ]);
 
-        $user = User::create([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'username' => $validated['username'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'type' => 'student',
-            'status' => 'active',
-            'verified' => true,
-            'gender' => $validated['gender'] ?? null,
-            'phone_number' => $validated['phone_number'] ?? null,
-        ]);
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'username' => $validated['username'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'type' => 'student',
+                'status' => 'active',
+                'verified' => true,
+                'gender' => $validated['gender'] ?? null,
+                'phone_number' => $validated['phone_number'] ?? null,
+            ]);
 
-        Student::create([
-            'user_id' => $user->id,
-            'parent_id' => $validated['parent_id'] ?? null,
-            'student_id' => $validated['student_id'],
-            'admission_date' => $validated['admission_date'],
-            'status' => 'active',
-            'medical_info' => $validated['medical_info'] ?? null,
-        ]);
+            $student = Student::create([
+                'user_id' => $user->id,
+                'student_id' => $validated['student_id'],
+                'admission_date' => $validated['admission_date'],
+                'status' => 'active',
+                'medical_info' => $validated['medical_info'] ?? null,
+            ]);
 
-        return redirect()->route('admin.students.index')
-            ->with('success', 'Student created successfully.');
+            // Create enrollments if classes selected
+            if (!empty($validated['class_ids'])) {
+                foreach ($validated['class_ids'] as $classId) {
+                    Enrollment::create([
+                        'student_id' => $student->id,
+                        'class_id' => $classId,
+                        'enrollment_date' => now(),
+                        'status' => 'active',
+                    ]);
+                }
+            }
+
+            // Assign teachers if selected
+            if (!empty($validated['teacher_ids'])) {
+                // Get classes for the teachers to create proper relationships
+                $teacherClasses = DB::table('class_teacher')
+                    ->whereIn('teacher_id', $validated['teacher_ids'])
+                    ->pluck('class_id', 'teacher_id');
+
+                foreach ($validated['teacher_ids'] as $teacherId) {
+                    // Only create enrollment if there's a class associated with this teacher
+                    // and the student isn't already enrolled
+                    if (isset($teacherClasses[$teacherId])) {
+                        $classId = $teacherClasses[$teacherId];
+                        $exists = Enrollment::where('student_id', $student->id)
+                            ->where('class_id', $classId)
+                            ->exists();
+
+                        if (!$exists) {
+                            Enrollment::create([
+                                'student_id' => $student->id,
+                                'class_id' => $classId,
+                                'enrollment_date' => now(),
+                                'status' => 'active',
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.students.index')
+                ->with('success', 'Student created successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Failed to create student: ' . $e->getMessage()]);
+        }
     }
 
     public function show($id)
@@ -114,18 +179,23 @@ class StudentController extends Controller
 
     public function edit($id)
     {
-        $student = Student::with('user', 'parent')->findOrFail($id);
-        $parents = ParentUser::with('user')->get()->map(function ($parent) {
-            return [
-                'id' => $parent->id,
-                'name' => $parent->user->full_name,
-                'email' => $parent->user->email,
-            ];
-        });
+        $student = Student::with(['user', 'enrollments'])->findOrFail($id);
+        
+        $classes = ClassModel::where('status', 'active')
+            ->select('id', 'name', 'code', 'academic_year')
+            ->orderBy('name')
+            ->get();
+        
+        // Get currently enrolled class IDs
+        $enrolledClassIds = $student->enrollments()
+            ->where('status', 'active')
+            ->pluck('class_id')
+            ->toArray();
 
         return Inertia::render('Admin/Student/Edit', [
             'student' => $student,
-            'parents' => $parents,
+            'classes' => $classes,
+            'enrolledClassIds' => $enrolledClassIds,
         ]);
     }
 
@@ -140,39 +210,86 @@ class StudentController extends Controller
             'email' => 'required|email|unique:users,email,' . $student->user_id,
             'password' => 'nullable|string|min:8',
             'student_id' => 'required|string|unique:students,student_id,' . $id,
-            'parent_id' => 'nullable|exists:parents,id',
             'admission_date' => 'required|date',
             'gender' => 'nullable|in:male,female,other',
             'phone_number' => 'nullable|string|max:20',
             'medical_info' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:active,inactive,graduated,transferred',
+            'class_ids' => 'nullable|array',
+            'class_ids.*' => 'exists:classes,id',
         ]);
 
-        $student->user->update([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'username' => $validated['username'],
-            'email' => $validated['email'],
-            'gender' => $validated['gender'] ?? null,
-            'phone_number' => $validated['phone_number'] ?? null,
-        ]);
-
-        if (!empty($validated['password'])) {
+        DB::beginTransaction();
+        try {
             $student->user->update([
-                'password' => Hash::make($validated['password']),
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'username' => $validated['username'],
+                'email' => $validated['email'],
+                'gender' => $validated['gender'] ?? null,
+                'phone_number' => $validated['phone_number'] ?? null,
             ]);
+
+            if (!empty($validated['password'])) {
+                $student->user->update([
+                    'password' => Hash::make($validated['password']),
+                ]);
+            }
+
+            $student->update([
+                'student_id' => $validated['student_id'],
+                'admission_date' => $validated['admission_date'],
+                'status' => $validated['status'],
+                'medical_info' => $validated['medical_info'] ?? null,
+            ]);
+
+            // Handle class enrollments
+            if (isset($validated['class_ids'])) {
+                // Get current active enrollments
+                $currentEnrollments = $student->enrollments()
+                    ->where('status', 'active')
+                    ->pluck('class_id')
+                    ->toArray();
+
+                $newClassIds = $validated['class_ids'];
+
+                // Classes to remove (in current but not in new)
+                $classesToRemove = array_diff($currentEnrollments, $newClassIds);
+                
+                // Classes to add (in new but not in current)
+                $classesToAdd = array_diff($newClassIds, $currentEnrollments);
+
+                // Remove enrollments
+                if (!empty($classesToRemove)) {
+                    Enrollment::where('student_id', $student->id)
+                        ->whereIn('class_id', $classesToRemove)
+                        ->delete();
+                }
+
+                // Add new enrollments
+                foreach ($classesToAdd as $classId) {
+                    Enrollment::create([
+                        'student_id' => $student->id,
+                        'class_id' => $classId,
+                        'enrollment_date' => now(),
+                        'status' => 'active',
+                    ]);
+                }
+            } else {
+                // If no classes selected, remove all enrollments
+                Enrollment::where('student_id', $student->id)
+                    ->where('status', 'active')
+                    ->delete();
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.students.index')
+                ->with('success', 'Student updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Failed to update student: ' . $e->getMessage()]);
         }
-
-        $student->update([
-            'parent_id' => $validated['parent_id'] ?? null,
-            'student_id' => $validated['student_id'],
-            'admission_date' => $validated['admission_date'],
-            'status' => $validated['status'],
-            'medical_info' => $validated['medical_info'] ?? null,
-        ]);
-
-        return redirect()->route('admin.students.index')
-            ->with('success', 'Student updated successfully.');
     }
 
     public function destroy($id)

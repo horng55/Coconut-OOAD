@@ -32,7 +32,7 @@ async function submit() {
 
 <template>
     <div class="relative min-h-screen flex justify-center items-center py-16 overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
         
         <div class="absolute inset-0 overflow-hidden">
             <div class="absolute top-20 left-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl animate-float"></div>

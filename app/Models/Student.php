@@ -70,4 +70,20 @@ class Student extends Model
     {
         return $this->hasMany(FeePayment::class);
     }
+
+    /**
+     * Get the assignment submissions for this student.
+     */
+    public function assignmentSubmissions()
+    {
+        return $this->hasMany(AssignmentSubmission::class);
+    }
+
+    /**
+     * Get the assessment submissions for this student.
+     */
+    public function assessmentSubmissions()
+    {
+        return $this->hasMany(AssessmentSubmission::class);
+    }
 }

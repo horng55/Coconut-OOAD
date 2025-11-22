@@ -11,7 +11,8 @@ const title = [
 
 const props = defineProps({
     student: Object,
-    parents: Array,
+    classes: Array,
+    enrolledClassIds: Array,
 });
 
 const form = useForm({
@@ -21,12 +22,12 @@ const form = useForm({
     email: props.student?.user?.email || '',
     password: '',
     student_id: props.student?.student_id || '',
-    parent_id: props.student?.parent_id || '',
     admission_date: props.student?.admission_date || '',
     gender: props.student?.user?.gender || '',
     phone_number: props.student?.user?.phone_number || '',
     medical_info: props.student?.medical_info || '',
     status: props.student?.status || 'active',
+    class_ids: props.enrolledClassIds || [],
 });
 
 const submit = () => {
@@ -129,22 +130,6 @@ const submit = () => {
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Parent
-                        </label>
-                        <select
-                            v-model="form.parent_id"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                        >
-                            <option value="">Select Parent</option>
-                            <option v-for="parent in parents" :key="parent.id" :value="parent.id">
-                                {{ parent.name }} ({{ parent.email }})
-                            </option>
-                        </select>
-                        <div v-if="form.errors.parent_id" class="text-red-500 text-sm mt-1">{{ form.errors.parent_id }}</div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Admission Date <span class="text-red-500">*</span>
                         </label>
                         <input
@@ -195,8 +180,44 @@ const submit = () => {
                         >
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
+                            <option value="graduated">Graduated</option>
+                            <option value="transferred">Transferred</option>
                         </select>
                         <div v-if="form.errors.status" class="text-red-500 text-sm mt-1">{{ form.errors.status }}</div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-chalkboard-teacher text-emerald-500 mr-2"></i>
+                            Assign to Classes
+                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                            <label
+                                v-for="classItem in classes"
+                                :key="classItem.id"
+                                class="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                                :class="{ 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700': form.class_ids.includes(classItem.id) }"
+                            >
+                                <input
+                                    v-model="form.class_ids"
+                                    type="checkbox"
+                                    :value="classItem.id"
+                                    class="mt-1 w-4 h-4 text-emerald-500 rounded focus:ring-2 focus:ring-emerald-500/50"
+                                />
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        {{ classItem.name }}
+                                    </p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                        {{ classItem.code }} • {{ classItem.academic_year }}
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            <i class="fas fa-info-circle"></i> Select the classes this student should be enrolled in
+                        </p>
+                        <div v-if="form.errors.class_ids" class="text-red-500 text-sm mt-1">{{ form.errors.class_ids }}</div>
                     </div>
 
                     <div class="md:col-span-2">

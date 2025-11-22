@@ -101,7 +101,9 @@ class TeacherGradeController extends Controller
                         'name' => $enrollment->student->user->full_name,
                         'student_id' => $enrollment->student->student_id,
                     ];
-                });
+                })
+                ->values()
+                ->toArray();
         }
 
         $assessments = [];
@@ -114,10 +116,10 @@ class TeacherGradeController extends Controller
 
         return Inertia::render('Teacher/Grade/Create', [
             'classes' => $classes,
-            'students' => $students,
+            'students' => $students ?: [],
             'selectedClass' => $class,
             'selectedStudent' => $student,
-            'assessments' => $assessments,
+            'assessments' => $assessments ?: [],
         ]);
     }
 

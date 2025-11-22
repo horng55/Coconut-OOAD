@@ -51,7 +51,7 @@ const averageGrade = computed(() => {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 dark:text-gray-400 text-sm">Enrolled Classes</p>
-                            <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ stats?.total_enrollments || 0 }}</p>
+                            <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ stats?.total_classes || 0 }}</p>
                         </div>
                         <div class="bg-emerald-100 dark:bg-emerald-900/30 p-3 rounded-lg">
                             <i class="fas fa-book-reader text-emerald-500 text-2xl"></i>
@@ -63,7 +63,7 @@ const averageGrade = computed(() => {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 dark:text-gray-400 text-sm">Average Grade</p>
-                            <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ averageGrade }}%</p>
+                            <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ stats?.average_grade || averageGrade }}%</p>
                         </div>
                         <div class="bg-amber-100 dark:bg-amber-900/30 p-3 rounded-lg">
                             <i class="fas fa-chart-line text-amber-500 text-2xl"></i>

@@ -28,7 +28,6 @@ use App\Http\Controllers\Web\Admin\Grade\GradeController;
 
 
 use App\Http\Controllers\Web\Admin\IdCard\IdCardController;
-use App\Http\Controllers\Web\Admin\Timetable\TimetableController;
 use App\Http\Controllers\Web\Admin\Promotion\PromotionController as AdminPromotionController;
 
 use App\Http\Controllers\Web\Admin\Role\RoleController;
@@ -96,35 +95,42 @@ Route::prefix('teacher')->group(function () {
         Route::get('/grades/{id}/edit', [\App\Http\Controllers\Web\Teacher\Grade\TeacherGradeController::class, 'edit'])->name('teacher.grades.edit');
         Route::put('/grades/{id}', [\App\Http\Controllers\Web\Teacher\Grade\TeacherGradeController::class, 'update'])->name('teacher.grades.update');
         
+        // Teacher Assessment Management
+        Route::get('/assessments', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'index'])->name('teacher.assessments.index');
+        Route::get('/assessments/create', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'create'])->name('teacher.assessments.create');
+        Route::post('/assessments', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'store'])->name('teacher.assessments.store');
+        Route::get('/assessments/{id}', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'show'])->name('teacher.assessments.show');
+        Route::get('/assessments/{id}/edit', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'edit'])->name('teacher.assessments.edit');
+        Route::put('/assessments/{id}', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'update'])->name('teacher.assessments.update');
+        Route::delete('/assessments/{id}', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'destroy'])->name('teacher.assessments.destroy');
+        Route::post('/assessments/grades/{id}', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'updateGrade'])->name('teacher.assessments.update-grade');
+        Route::get('/assessments/submissions/{submissionId}/download', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'downloadSubmission'])->name('teacher.assessments.download-submission');
+        
         // Teacher Assignment Management
-        Route::get('/assignments', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'index'])->name('teacher.assessments.index');
-        Route::get('/assignments/create', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'create'])->name('teacher.assessments.create');
-        Route::post('/assignments', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'store'])->name('teacher.assessments.store');
-        Route::get('/assignments/{id}/edit', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'edit'])->name('teacher.assessments.edit');
-        Route::put('/assignments/{id}', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'update'])->name('teacher.assessments.update');
-        Route::delete('/assignments/{id}', [\App\Http\Controllers\Web\Teacher\Assessment\TeacherAssessmentController::class, 'destroy'])->name('teacher.assessments.destroy');
+        Route::get('/assignments', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'index'])->name('teacher.assignments.index');
+        Route::get('/assignments/create', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'create'])->name('teacher.assignments.create');
+        Route::post('/assignments', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'store'])->name('teacher.assignments.store');
+        Route::get('/assignments/{id}', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'show'])->name('teacher.assignments.show');
+        Route::get('/assignments/{id}/edit', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'edit'])->name('teacher.assignments.edit');
+        Route::post('/assignments/{id}', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'update'])->name('teacher.assignments.update');
+        Route::delete('/assignments/{id}', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'destroy'])->name('teacher.assignments.destroy');
+        Route::post('/assignments/{assignment}/submissions/{submission}/grade', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'gradeSubmission'])->name('teacher.assignments.grade-submission');
+        Route::get('/assignments/{id}/download', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'downloadAttachment'])->name('teacher.assignments.download-attachment');
+        Route::get('/assignments/{assignment}/submissions/{submission}/download', [\App\Http\Controllers\Web\Teacher\Assignment\TeacherAssignmentController::class, 'downloadSubmission'])->name('teacher.assignments.download-submission');
         
         // Teacher Classes
         Route::get('/classes', [\App\Http\Controllers\Web\Teacher\Class\TeacherClassController::class, 'index'])->name('teacher.classes.index');
+        Route::get('/classes/create', [\App\Http\Controllers\Web\Teacher\Class\TeacherClassController::class, 'create'])->name('teacher.classes.create');
+        Route::post('/classes', [\App\Http\Controllers\Web\Teacher\Class\TeacherClassController::class, 'store'])->name('teacher.classes.store');
         Route::get('/classes/{id}', [\App\Http\Controllers\Web\Teacher\Class\TeacherClassController::class, 'show'])->name('teacher.classes.show');
+        Route::get('/classes/{id}/create-student', [\App\Http\Controllers\Web\Teacher\Class\TeacherClassController::class, 'createStudent'])->name('teacher.classes.create-student');
+        Route::post('/classes/{id}/students', [\App\Http\Controllers\Web\Teacher\Class\TeacherClassController::class, 'storeStudent'])->name('teacher.classes.store-student');
+        Route::get('/classes/{id}/enroll-student', [\App\Http\Controllers\Web\Teacher\Class\TeacherClassController::class, 'enrollStudent'])->name('teacher.classes.enroll-student');
+        Route::post('/classes/{id}/enroll', [\App\Http\Controllers\Web\Teacher\Class\TeacherClassController::class, 'storeEnrollment'])->name('teacher.classes.store-enrollment');
         
         // Teacher Students
         Route::get('/students', [\App\Http\Controllers\Web\Teacher\Student\TeacherStudentController::class, 'index'])->name('teacher.students.index');
         Route::get('/students/{id}', [\App\Http\Controllers\Web\Teacher\Student\TeacherStudentController::class, 'show'])->name('teacher.students.show');
-        
-        // Teacher Timetable
-        Route::get('/timetable', [\App\Http\Controllers\Web\Teacher\Timetable\TeacherTimetableController::class, 'index'])->name('teacher.timetable.index');
-        
-        // Teacher Attendance
-        Route::get('/attendances', [\App\Http\Controllers\Web\Teacher\Attendance\TeacherAttendanceController::class, 'index'])->name('teacher.attendances.index');
-        Route::get('/attendances/create', [\App\Http\Controllers\Web\Teacher\Attendance\TeacherAttendanceController::class, 'create'])->name('teacher.attendances.create');
-        Route::post('/attendances', [\App\Http\Controllers\Web\Teacher\Attendance\TeacherAttendanceController::class, 'store'])->name('teacher.attendances.store');
-        Route::get('/attendances/{id}/edit', [\App\Http\Controllers\Web\Teacher\Attendance\TeacherAttendanceController::class, 'edit'])->name('teacher.attendances.edit');
-        Route::put('/attendances/{id}', [\App\Http\Controllers\Web\Teacher\Attendance\TeacherAttendanceController::class, 'update'])->name('teacher.attendances.update');
-        
-        // Teacher Announcements
-        Route::get('/announcements', [\App\Http\Controllers\Web\Teacher\Announcement\TeacherAnnouncementController::class, 'index'])->name('teacher.announcements.index');
-        Route::get('/announcements/{id}', [\App\Http\Controllers\Web\Teacher\Announcement\TeacherAnnouncementController::class, 'show'])->name('teacher.announcements.show');
     });
 });
 
@@ -137,10 +143,17 @@ Route::prefix('student')->group(function () {
         Route::post('/logout', [StudentAuthController::class, 'logout'])->name('student.logout');
         Route::get('/dashboard', [\App\Http\Controllers\Web\Student\Dashboard\StudentDashboardController::class, 'index'])->name('student.dashboard');
         
-        // Student Assignments (TODO: Create StudentAssessmentController)
-        // Route::get('/assignments', [\App\Http\Controllers\Web\Student\Assessment\StudentAssessmentController::class, 'index'])->name('student.assessments.index');
-        // Route::get('/assignments/{id}', [\App\Http\Controllers\Web\Student\Assessment\StudentAssessmentController::class, 'show'])->name('student.assessments.show');
-        // Route::post('/assignments/{id}/submit', [\App\Http\Controllers\Web\Student\Assessment\StudentAssessmentController::class, 'submit'])->name('student.assessments.submit');
+        // Student Assessments
+        Route::get('/assessments', [\App\Http\Controllers\Web\Student\Assessment\StudentAssessmentController::class, 'index'])->name('student.assessments.index');
+        Route::get('/assessments/{id}', [\App\Http\Controllers\Web\Student\Assessment\StudentAssessmentController::class, 'show'])->name('student.assessments.show');
+        Route::post('/assessments/{id}/submit', [\App\Http\Controllers\Web\Student\Assessment\StudentAssessmentController::class, 'submit'])->name('student.assessments.submit');
+        Route::get('/assessments/{id}/download-submission', [\App\Http\Controllers\Web\Student\Assessment\StudentAssessmentController::class, 'downloadSubmission'])->name('student.assessments.download-submission');
+        
+        // Student Assignments
+        Route::get('/assignments', [\App\Http\Controllers\Web\Student\Assignment\StudentAssignmentController::class, 'index'])->name('student.assignments.index');
+        Route::get('/assignments/{id}', [\App\Http\Controllers\Web\Student\Assignment\StudentAssignmentController::class, 'show'])->name('student.assignments.show');
+        Route::post('/assignments/{id}/submit', [\App\Http\Controllers\Web\Student\Assignment\StudentAssignmentController::class, 'submit'])->name('student.assignments.submit');
+        Route::get('/assignments/{id}/download', [\App\Http\Controllers\Web\Student\Assignment\StudentAssignmentController::class, 'downloadAttachment'])->name('student.assignments.download-attachment');
         
         // Student Grades
         Route::get('/grades', [\App\Http\Controllers\Web\Student\Grade\StudentGradeController::class, 'index'])->name('student.grades.index');
@@ -148,16 +161,6 @@ Route::prefix('student')->group(function () {
         // Student Classes
         Route::get('/classes', [\App\Http\Controllers\Web\Student\Class\StudentClassController::class, 'index'])->name('student.classes.index');
         Route::get('/classes/{id}', [\App\Http\Controllers\Web\Student\Class\StudentClassController::class, 'show'])->name('student.classes.show');
-        
-        // Student Attendance
-        Route::get('/attendances', [\App\Http\Controllers\Web\Student\Attendance\StudentAttendanceController::class, 'index'])->name('student.attendances.index');
-        
-        // Student Timetable
-        Route::get('/timetable', [\App\Http\Controllers\Web\Student\Timetable\StudentTimetableController::class, 'index'])->name('student.timetable.index');
-        
-        // Student Announcements
-        Route::get('/announcements', [\App\Http\Controllers\Web\Student\Announcement\StudentAnnouncementController::class, 'index'])->name('student.announcements.index');
-        Route::get('/announcements/{id}', [\App\Http\Controllers\Web\Student\Announcement\StudentAnnouncementController::class, 'show'])->name('student.announcements.show');
     });
 });
 
@@ -172,8 +175,8 @@ Route::prefix('admin')->group(function () {
 //    Route::get('/register', [RegisteredController::class, 'create'])->name('admin.register.index');
 //    Route::post('/register', [RegisteredController::class, 'store'])->name('admin.register.store');
 
-    // Admin Authenticated Routes (using auth middleware)
-    Route::middleware(['auth', \App\Http\Middleware\AdminHandleInertiaRequests::class, 'admin'])->group(function () {
+    // Admin Authenticated Routes (using auth and admin middleware)
+    Route::middleware(['auth', 'admin'])->group(function () {
         // Dashboard Route
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 

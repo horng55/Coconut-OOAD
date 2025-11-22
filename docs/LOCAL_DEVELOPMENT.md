@@ -187,7 +187,6 @@ The School Management System includes the following features:
 - **Assessment Management**: Create and manage assessments (Quiz, Assignment, Mid-Term, Final Exam)
 
 ### Advanced Features
-- **Timetable Management**: Create and manage class schedules with time conflict detection
 - **Promotion Management**: Promote students between classes (individual and bulk promotions)
 - **Report Management**: Generate various reports including:
   - Student Performance Reports
@@ -226,7 +225,6 @@ The system includes the following main database tables:
 - `attendances` - Student attendance records
 - `assessments` - Assessment information
 - `grades` - Student grade records
-- `timetables` - Class schedule/timetable entries
 - `promotions` - Student promotion records
 - `reports` - Generated report records
 - `id_cards` - ID card information

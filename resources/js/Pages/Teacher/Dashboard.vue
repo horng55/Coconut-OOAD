@@ -9,6 +9,7 @@ const props = defineProps({
     teacher: Object,
     classes: Array,
     recentGrades: Array,
+    recentSubmissions: Array,
     stats: Object,
 });
 
@@ -85,18 +86,13 @@ const getLetterGrade = (percentage) => {
                                 <i class="fas fa-plus-circle"></i>
                                 <span>Add Grade</span>
                             </Link>
-                            <Link :href="route('teacher.attendances.create')" 
-                                class="flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all">
-                                <i class="fas fa-clipboard-check"></i>
-                                <span>Take Attendance</span>
-                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Statistics Cards with Hover Effects -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Total Classes Card -->
                 <div class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -137,26 +133,6 @@ const getLetterGrade = (percentage) => {
                     </div>
                 </div>
 
-                <!-- Assignments Card -->
-                <div class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
-                    <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-amber-600/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="relative p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all">
-                                <i class="fas fa-tasks text-white text-2xl"></i>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-4xl font-bold text-gray-900 dark:text-white">{{ stats?.total_assignments || 0 }}</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-400 font-medium">Assignments</p>
-                        <div class="mt-3 flex items-center text-sm text-amber-600 dark:text-amber-400">
-                            <i class="fas fa-arrow-right mr-2"></i>
-                            <Link :href="route('teacher.assessments.index')" class="hover:underline">Manage assignments</Link>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Grades Card -->
                 <div class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
                     <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -173,6 +149,160 @@ const getLetterGrade = (percentage) => {
                         <div class="mt-3 flex items-center text-sm text-purple-600 dark:text-purple-400">
                             <i class="fas fa-arrow-right mr-2"></i>
                             <Link :href="route('teacher.grades.index')" class="hover:underline">View all grades</Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Recent Submissions Section -->
+                <div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-file-alt text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Recent Submissions</h2>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            <span class="font-semibold text-orange-600 dark:text-orange-400">{{ stats?.pending_submissions || 0 }}</span> pending grading
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6 max-h-[500px] overflow-y-auto">
+                            <div v-if="recentSubmissions && recentSubmissions.length > 0" class="space-y-3">
+                                <div 
+                                    v-for="submission in recentSubmissions" 
+                                    :key="submission.id"
+                                    class="group p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl hover:shadow-md transition-all border-2"
+                                    :class="submission.is_graded ? 'border-green-200 dark:border-green-800' : 'border-orange-200 dark:border-orange-800'"
+                                >
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i class="fas fa-user-graduate text-indigo-500"></i>
+                                                <p class="font-semibold text-gray-900 dark:text-white truncate">
+                                                    {{ submission.student_name }}
+                                                </p>
+                                            </div>
+                                            <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mb-1">
+                                                {{ submission.assessment_name }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ submission.class_name }}
+                                            </p>
+                                        </div>
+                                        <div v-if="submission.is_graded" class="flex-shrink-0">
+                                            <div class="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-bold flex items-center gap-1">
+                                                <i class="fas fa-check-circle"></i>
+                                                Graded
+                                            </div>
+                                            <div class="text-center mt-1">
+                                                <span class="text-sm font-bold text-gray-900 dark:text-white">
+                                                    {{ submission.grade_score }}/{{ submission.max_score }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div v-else class="flex-shrink-0">
+                                            <div class="px-3 py-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-lg text-xs font-bold flex items-center gap-1">
+                                                <i class="fas fa-clock"></i>
+                                                Pending
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-2 mb-3 text-xs text-gray-600 dark:text-gray-400">
+                                        <i class="fas fa-file-pdf text-red-500"></i>
+                                        <span class="truncate">{{ submission.file_name }}</span>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-600">
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            {{ new Date(submission.submitted_at).toLocaleDateString() }}
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a
+                                                :href="route('teacher.assessments.download-submission', submission.id)"
+                                                class="relative z-10 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-xs font-medium flex items-center gap-1 cursor-pointer"
+                                                target="_blank"
+                                            >
+                                                <i class="fas fa-download"></i>
+                                                View PDF
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="text-center py-16">
+                                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-file-alt text-4xl text-gray-300 dark:text-gray-600"></i>
+                                </div>
+                                <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No submissions yet</p>
+                                <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Student submissions will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Grades Section -->
+                <div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-700 dark:to-gray-800 p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-star text-white"></i>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Recent Grades</h2>
+                                </div>
+                                <Link :href="route('teacher.grades.index')" 
+                                    class="flex items-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 bg-white dark:bg-gray-700 px-4 py-2 rounded-lg shadow-sm hover:shadow transition-all">
+                                    <span>View All</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </Link>
+                            </div>
+                        </div>
+                        <div class="p-6 max-h-[500px] overflow-y-auto">
+                            <div v-if="recentGrades && recentGrades.length > 0" class="space-y-3">
+                                <div 
+                                    v-for="grade in recentGrades.slice(0, 8)" 
+                                    :key="grade.id"
+                                    class="group p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl hover:shadow-md transition-all border border-gray-200 dark:border-gray-600"
+                                >
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                                                <i class="fas fa-user-graduate text-white"></i>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-gray-900 dark:text-white truncate">
+                                                    {{ grade.student?.user?.full_name || grade.student?.user?.name || 'Unknown' }}
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ grade.class_model?.name || 'N/A' }}</p>
+                                            </div>
+                                        </div>
+                                        <div :class="['px-3 py-2 rounded-xl font-bold text-sm flex-shrink-0', getLetterGradeColor(grade.percentage)]">
+                                            {{ getLetterGrade(grade.percentage) }}
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">Score</span>
+                                        <span class="font-bold text-gray-900 dark:text-white">{{ grade.score }}/{{ grade.max_score }} ({{ grade.percentage }}%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="text-center py-16">
+                                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-chart-line text-4xl text-gray-300 dark:text-gray-600"></i>
+                                </div>
+                                <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No grades yet</p>
+                                <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Start grading assignments</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -236,59 +366,38 @@ const getLetterGrade = (percentage) => {
                     </div>
                 </div>
 
-                <!-- Recent Grades - Takes 1 column -->
+                <!-- Quick Stats Sidebar -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
-                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-700 dark:to-gray-800 p-6 border-b border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
-                                        <i class="fas fa-star text-white"></i>
-                                    </div>
-                                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Recent Grades</h2>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-800 p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-chart-pie text-white"></i>
                                 </div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Quick Stats</h2>
                             </div>
-                            <Link :href="route('teacher.grades.index')" 
-                                class="inline-flex items-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300">
-                                <span>View All</span>
-                                <i class="fas fa-arrow-right text-xs"></i>
-                            </Link>
                         </div>
-                        <div class="p-6 max-h-96 overflow-y-auto">
-                            <div v-if="recentGrades && recentGrades.length > 0" class="space-y-3">
-                                <div 
-                                    v-for="grade in recentGrades.slice(0, 5)" 
-                                    :key="grade.id"
-                                    class="group p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl hover:shadow-md transition-all border border-gray-200 dark:border-gray-600"
-                                >
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center gap-3 flex-1 min-w-0">
-                                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                                                <i class="fas fa-user-graduate text-white"></i>
-                                            </div>
-                                            <div class="min-w-0">
-                                                <p class="font-semibold text-gray-900 dark:text-white truncate">
-                                                    {{ grade.student?.user?.full_name || grade.student?.user?.name || 'Unknown' }}
-                                                </p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ grade.class_model?.name || 'N/A' }}</p>
-                                            </div>
-                                        </div>
-                                        <div :class="['px-3 py-2 rounded-xl font-bold text-sm flex-shrink-0', getLetterGradeColor(grade.percentage)]">
-                                            {{ getLetterGrade(grade.percentage) }}
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Score</span>
-                                        <span class="font-bold text-gray-900 dark:text-white">{{ grade.score }}/{{ grade.max_score }} ({{ grade.percentage }}%)</span>
-                                    </div>
+                        <div class="p-6 space-y-4">
+                            <div class="p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-xl">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Pending Submissions</span>
+                                    <i class="fas fa-clock text-orange-500"></i>
                                 </div>
+                                <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ stats?.pending_submissions || 0 }}</p>
                             </div>
-                            <div v-else class="text-center py-16">
-                                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <i class="fas fa-chart-line text-4xl text-gray-300 dark:text-gray-600"></i>
+                            <div class="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Total Grades Given</span>
+                                    <i class="fas fa-check-circle text-green-500"></i>
                                 </div>
-                                <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No grades yet</p>
-                                <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Start grading assignments</p>
+                                <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ stats?.total_grades || 0 }}</p>
+                            </div>
+                            <div class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Active Classes</span>
+                                    <i class="fas fa-chalkboard text-blue-500"></i>
+                                </div>
+                                <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ stats?.total_classes || 0 }}</p>
                             </div>
                         </div>
                     </div>

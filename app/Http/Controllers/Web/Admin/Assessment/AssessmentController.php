@@ -47,6 +47,36 @@ class AssessmentController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        $classes = ClassModel::where('status', 'active')->get(['id', 'name', 'code']);
+
+        return Inertia::render('Admin/Assessment/Create', [
+            'classes' => $classes,
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'class_id' => 'required|exists:classes,id',
+            'assessment_name' => 'required|string|max:255',
+            'assessment_type' => 'required|in:exam,quiz,assignment,project,presentation',
+            'assessment_date' => 'required|date',
+            'max_score' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $validated['created_by'] = auth()->id();
+
+        Assessment::create($validated);
+
+        FlashMessage::success('Assessment created successfully.');
+
+        return redirect()->route('admin.assessments.index');
+    }
+
     public function show($id)
     {
         $assessment = Assessment::with('classModel', 'createdBy', 'grades.student.user')

@@ -11,7 +11,6 @@ use App\Models\Attendance;
 use App\Models\Grade;
 use App\Models\Announcement;
 use App\Models\FeePayment;
-use App\Models\Timetable;
 use Inertia\Inertia;
 
 class ParentDashboardController extends Controller
@@ -75,16 +74,6 @@ class ParentDashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Get today's timetables for enrolled classes
-        $today = date('Y-m-d');
-        $dayOfWeek = strtolower(date('l'));
-        $todayTimetables = Timetable::whereIn('class_id', $classIds)
-            ->where('day_of_week', $dayOfWeek)
-            ->where('status', 'active')
-            ->with(['classModel', 'subject', 'teacher.user'])
-            ->orderBy('start_time')
-            ->get();
-
         // Calculate statistics across all children
         $totalFeeAmount = FeePayment::whereIn('student_id', $studentIds)->sum('amount');
         $totalPaid = FeePayment::whereIn('student_id', $studentIds)->where('status', 'paid')->sum('amount_paid');
@@ -115,7 +104,6 @@ class ParentDashboardController extends Controller
             'announcements' => $announcements,
             'feePayments' => $feePayments,
             'pendingPayments' => $pendingPayments,
-            'todayTimetables' => $todayTimetables,
             'stats' => $stats,
         ]);
     }

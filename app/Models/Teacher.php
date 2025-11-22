@@ -33,13 +33,13 @@ class Teacher extends Model
         return $this->belongsToMany(ClassModel::class, 'class_teacher')->withTimestamps();
     }
 
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class);
+    }
+
     public function idCards()
     {
         return $this->hasMany(IdCard::class);
-    }
-
-    public function timetables()
-    {
-        return $this->hasMany(Timetable::class);
     }
 }

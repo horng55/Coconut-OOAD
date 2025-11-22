@@ -14,7 +14,6 @@ const props = defineProps({
     announcements: Array,
     feePayments: Array,
     pendingPayments: Array,
-    todayTimetables: Array,
     stats: Object,
 });
 
@@ -282,55 +281,6 @@ const formatCurrency = (amount) => {
                                     <p class="font-semibold text-indigo-900 dark:text-indigo-300">
                                         {{ child.grades?.length || 0 }}
                                     </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Today's Schedule -->
-            <div v-if="todayTimetables && todayTimetables.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="bg-gradient-to-r from-cyan-500 to-blue-500 p-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                            <i class="fas fa-calendar-day text-white"></i>
-                        </div>
-                        <h2 class="text-xl font-bold text-white">Today's Schedule</h2>
-                    </div>
-                </div>
-                
-                <div class="p-6">
-                    <div class="space-y-3">
-                        <div
-                            v-for="timetable in todayTimetables"
-                            :key="timetable.id"
-                            class="p-4 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800"
-                        >
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h4 class="font-semibold text-cyan-900 dark:text-cyan-300">
-                                            {{ timetable.subject?.name || 'N/A' }}
-                                        </h4>
-                                        <span class="text-xs text-cyan-600 dark:text-cyan-400">
-                                            ({{ timetable.class_model?.name || 'N/A' }})
-                                        </span>
-                                    </div>
-                                    <p class="text-sm text-cyan-700 dark:text-cyan-400 mb-2">
-                                        <i class="fas fa-clock mr-1"></i>
-                                        {{ timetable.start_time }} - {{ timetable.end_time }}
-                                    </p>
-                                    <div class="flex items-center gap-4 text-sm text-cyan-600 dark:text-cyan-400">
-                                        <span v-if="timetable.teacher?.user">
-                                            <i class="fas fa-chalkboard-teacher mr-1"></i>
-                                            {{ timetable.teacher.user.full_name }}
-                                        </span>
-                                        <span v-if="timetable.room">
-                                            <i class="fas fa-door-open mr-1"></i>
-                                            {{ timetable.room }}
-                                        </span>
-                                    </div>
                                 </div>
                             </div>
                         </div>

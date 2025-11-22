@@ -10,6 +10,7 @@ use App\Models\ClassModel;
 use App\Models\Enrollment;
 use App\Models\Grade;
 use App\Models\Assessment;
+use App\Models\AssessmentSubmission;
 use Inertia\Inertia;
 
 class TeacherDashboardController extends Controller
@@ -64,12 +65,48 @@ class TeacherDashboardController extends Controller
                 ? Assessment::whereIn('class_id', $classIds)->count()
                 : 0;
 
+            // Get recent submissions that need grading
+            $recentSubmissions = count($classIds) > 0
+                ? AssessmentSubmission::whereHas('assessment', function ($query) use ($classIds) {
+                    $query->whereIn('class_id', $classIds);
+                })
+                ->with([
+                    'student.user',
+                    'assessment.classModel',
+                    'assessment.grades' => function ($query) {
+                        $query->select('id', 'assessment_id', 'student_id', 'score', 'feedback');
+                    }
+                ])
+                ->latest('submitted_at')
+                ->limit(10)
+                ->get()
+                ->map(function ($submission) {
+                    // Find the grade for this student and assessment
+                    $grade = $submission->assessment->grades->where('student_id', $submission->student_id)->first();
+                    
+                    return [
+                        'id' => $submission->id,
+                        'student_name' => $submission->student->user->full_name ?? 'N/A',
+                        'student_email' => $submission->student->user->email ?? 'N/A',
+                        'assessment_name' => $submission->assessment->assessment_name,
+                        'assessment_id' => $submission->assessment->id,
+                        'class_name' => $submission->assessment->classModel->name ?? 'N/A',
+                        'file_name' => $submission->file_name,
+                        'submitted_at' => $submission->submitted_at,
+                        'is_graded' => $grade && ($grade->score > 0 || $grade->feedback),
+                        'grade_score' => $grade ? $grade->score : null,
+                        'max_score' => $submission->assessment->max_score,
+                    ];
+                })
+                : collect([]);
+
             // Calculate statistics
             $stats = [
                 'total_classes' => $classes->count(),
                 'total_students' => $totalStudents,
                 'total_assignments' => $totalAssignments,
                 'total_grades' => count($classIds) > 0 ? Grade::whereIn('class_id', $classIds)->count() : 0,
+                'pending_submissions' => $recentSubmissions->where('is_graded', false)->count(),
             ];
 
             \Log::info('Teacher Dashboard - Stats: ' . json_encode($stats));
@@ -80,6 +117,7 @@ class TeacherDashboardController extends Controller
                 'teacher' => $teacher,
                 'classes' => $classes,
                 'recentGrades' => $recentGrades,
+                'recentSubmissions' => $recentSubmissions,
                 'stats' => $stats,
             ]);
         } catch (\Exception $e) {
@@ -89,11 +127,13 @@ class TeacherDashboardController extends Controller
                 'teacher' => null,
                 'classes' => [],
                 'recentGrades' => [],
+                'recentSubmissions' => [],
                 'stats' => [
                     'total_classes' => 0,
                     'total_students' => 0,
                     'total_assignments' => 0,
                     'total_grades' => 0,
+                    'pending_submissions' => 0,
                 ],
             ]);
         }

@@ -48,6 +48,13 @@ const deleteAssessment = (id) => {
         >
             <template #actions>
                 <div class="flex items-center gap-3 flex-wrap">
+                    <Link
+                        :href="route('admin.assessments.create')"
+                        class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-6 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl"
+                    >
+                        <i class="fas fa-plus"></i>
+                        Create Assessment
+                    </Link>
                     <input
                         v-model="searchQuery"
                         @keyup.enter="handleSearch"

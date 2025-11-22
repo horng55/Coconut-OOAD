@@ -50,6 +50,20 @@ const handleSearch = () => {
                 </div>
 
                 <div class="p-6">
+                    <div v-if="classes && classes.length > 0" class="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-info-circle text-blue-500 text-lg mt-0.5"></i>
+                            <div class="flex-1">
+                                <p class="text-sm text-blue-800 dark:text-blue-300 font-medium mb-1">
+                                    Need to add students to your classes?
+                                </p>
+                                <p class="text-xs text-blue-700 dark:text-blue-400">
+                                    Go to <Link :href="route('teacher.classes.index')" class="font-semibold underline hover:text-blue-600">My Classes</Link>, select a class, then use the "Create New" or "Enroll Existing" buttons to add students.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex items-center gap-3 flex-wrap mb-6">
                         <input
                             v-model="searchQuery"

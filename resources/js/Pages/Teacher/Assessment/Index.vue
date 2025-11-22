@@ -163,6 +163,13 @@ const deleteAssessment = (id) => {
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             <Link
+                                                :href="route('teacher.assessments.show', assessment.id)"
+                                                class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center gap-1 text-sm"
+                                                title="View Details & Grade"
+                                            >
+                                                <i class="fas fa-eye"></i>
+                                            </Link>
+                                            <Link
                                                 :href="route('teacher.assessments.edit', assessment.id)"
                                                 class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center gap-1 text-sm"
                                                 title="Edit"

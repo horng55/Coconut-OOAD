@@ -11,6 +11,7 @@ const title = [
 const props = defineProps({
     classes: Array,
     selectedClass: Object,
+    students: Array,
 });
 
 const form = useForm({
@@ -21,6 +22,7 @@ const form = useForm({
     max_score: '100',
     assessment_date: new Date().toISOString().split('T')[0],
     description: '',
+    student_ids: [],
 });
 
 watch(() => form.class_id, (newClassId) => {
@@ -168,6 +170,52 @@ const submit = () => {
                                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                             ></textarea>
                             <div v-if="form.errors.description" class="text-red-500 text-sm mt-1">{{ form.errors.description }}</div>
+                        </div>
+
+                        <div v-if="students && students.length > 0" class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-user-graduate text-indigo-500 mr-2"></i>
+                                Assign to Students (Optional)
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                                <label
+                                    v-for="student in students"
+                                    :key="student.id"
+                                    class="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                                    :class="{ 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-700': form.student_ids.includes(student.id) }"
+                                >
+                                    <input
+                                        v-model="form.student_ids"
+                                        type="checkbox"
+                                        :value="student.id"
+                                        class="mt-1 w-4 h-4 text-indigo-500 rounded focus:ring-2 focus:ring-indigo-500/50"
+                                    />
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {{ student.name }}
+                                        </p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400">
+                                            {{ student.student_id }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-500">
+                                            {{ student.email }}
+                                        </p>
+                                    </div>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                <i class="fas fa-info-circle"></i> Select students to assign this assessment (creates grade entries for grading)
+                            </p>
+                            <div v-if="form.errors.student_ids" class="text-red-500 text-sm mt-1">{{ form.errors.student_ids }}</div>
+                        </div>
+
+                        <div v-else-if="form.class_id" class="md:col-span-2">
+                            <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+                                <p class="text-yellow-800 dark:text-yellow-300 text-sm flex items-center gap-2">
+                                    <i class="fas fa-info-circle"></i>
+                                    No students enrolled in this class yet. You can still create the assessment and assign students later.
+                                </p>
+                            </div>
                         </div>
                     </div>
 

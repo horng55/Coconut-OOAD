@@ -86,6 +86,8 @@ class AuthController extends Controller
 
             Auth::guard('web')->login($user, $request->boolean('remember'));
 
+            $request->session()->regenerate();
+
             \Log::info('User authenticated successfully', ['user_id' => $user->id]);
 
             session([
@@ -94,7 +96,7 @@ class AuthController extends Controller
             ]);
 
             FlashMessage::success("Login successful");
-            return Redirect::route('dashboard.index');
+            return redirect()->intended(route('dashboard.index'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Validation error', ['errors' => $e->errors()]);
             return back()->withErrors($e->errors());

@@ -42,4 +42,9 @@ class Assessment extends Model
     {
         return $this->hasMany(Grade::class, 'assessment_id');
     }
+
+    public function submissions()
+    {
+        return $this->hasMany(AssessmentSubmission::class);
+    }
 }

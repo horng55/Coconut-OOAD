@@ -201,6 +201,18 @@ onUnmounted(() => {
                             Classes
                         </Link>
                         <Link
+                            :href="route('student.assessments.index')"
+                            :class="[
+                                'px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2',
+                                $page.url.startsWith('/student/assessments')
+                                    ? 'bg-emerald-500 text-white shadow-lg'
+                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            ]"
+                        >
+                            <i class="fas fa-clipboard-list"></i>
+                            Assessments
+                        </Link>
+                        <Link
                             :href="route('student.grades.index')"
                             :class="[
                                 'px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2',
@@ -211,42 +223,6 @@ onUnmounted(() => {
                         >
                             <i class="fas fa-graduation-cap"></i>
                             Grades
-                        </Link>
-                        <Link
-                            :href="route('student.attendances.index')"
-                            :class="[
-                                'px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2',
-                                $page.url.startsWith('/student/attendances')
-                                    ? 'bg-emerald-500 text-white shadow-lg'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                            ]"
-                        >
-                            <i class="fas fa-clipboard-check"></i>
-                            Attendance
-                        </Link>
-                        <Link
-                            :href="route('student.timetable.index')"
-                            :class="[
-                                'px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2',
-                                $page.url.startsWith('/student/timetable')
-                                    ? 'bg-emerald-500 text-white shadow-lg'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                            ]"
-                        >
-                            <i class="fas fa-calendar-alt"></i>
-                            Timetable
-                        </Link>
-                        <Link
-                            :href="route('student.announcements.index')"
-                            :class="[
-                                'px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2',
-                                $page.url.startsWith('/student/announcements')
-                                    ? 'bg-emerald-500 text-white shadow-lg'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                            ]"
-                        >
-                            <i class="fas fa-bullhorn"></i>
-                            Announcements
                         </Link>
                     </div>
                 </div>

@@ -7,6 +7,8 @@ use App\Models\Teacher;
 use App\Models\Student;
 use App\Models\ClassModel;
 use App\Models\Enrollment;
+use App\Models\Assessment;
+use App\Models\Assignment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -166,11 +168,72 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        // Create Assessments
+        $assessments = [
+            [
+                'class_id' => $createdClasses[0]->id,
+                'assessment_name' => 'Midterm Exam - Algebra',
+                'assessment_type' => 'mid_term',
+                'description' => 'Comprehensive exam covering algebraic concepts including linear equations, quadratic functions, and polynomials.',
+                'assessment_date' => now()->addDays(7)->format('Y-m-d'),
+                'max_score' => 100,
+                'created_by_id' => $admin->id,
+            ],
+            [
+                'class_id' => $createdClasses[0]->id,
+                'assessment_name' => 'Quiz - Trigonometry Basics',
+                'assessment_type' => 'quiz',
+                'description' => 'Short quiz on sine, cosine, and tangent functions.',
+                'assessment_date' => now()->addDays(3)->format('Y-m-d'),
+                'max_score' => 50,
+                'created_by_id' => $admin->id,
+            ],
+            [
+                'class_id' => $createdClasses[0]->id,
+                'assessment_name' => 'Final Project - Mathematical Research',
+                'assessment_type' => 'project',
+                'description' => 'Research and present a mathematical concept of your choice with real-world applications.',
+                'assessment_date' => now()->addDays(30)->format('Y-m-d'),
+                'max_score' => 150,
+                'created_by_id' => $admin->id,
+            ],
+        ];
+
+        foreach ($assessments as $assessmentData) {
+            Assessment::create($assessmentData);
+        }
+
+        // Create Assignments
+        $assignments = [
+            [
+                'class_id' => $createdClasses[0]->id,
+                'title' => 'Linear Equations Worksheet',
+                'description' => 'Complete exercises 1-20 from Chapter 3. Show all your work and explain your reasoning for word problems.',
+                'due_date' => now()->addDays(5)->format('Y-m-d'),
+                'max_score' => 100,
+                'created_by_id' => $createdTeachers[0]->user_id,
+            ],
+            [
+                'class_id' => $createdClasses[0]->id,
+                'title' => 'Geometry Proofs Assignment',
+                'description' => 'Solve 5 geometric proofs using the theorems discussed in class. Include diagrams and step-by-step explanations.',
+                'due_date' => now()->addDays(10)->format('Y-m-d'),
+                'max_score' => 75,
+                'created_by_id' => $createdTeachers[0]->user_id,
+            ],
+        ];
+
+        foreach ($assignments as $assignmentData) {
+            Assignment::create($assignmentData);
+        }
+
         $this->command->info('✅ Database seeded successfully!');
         $this->command->info('📧 Admin Login: admin@schoolme.com / password123');
         $this->command->info('👨‍🏫 Teacher Login: teacher@schoolme.com / password123');
         $this->command->info('👨‍🎓 Student Login: student@schoolme.com / password123');
         $this->command->info('📚 Created ' . count($createdClasses) . ' class');
         $this->command->info('📝 Created ' . count($enrollments) . ' enrollment');
+        $this->command->info('📋 Created ' . count($assessments) . ' assessments');
+        $this->command->info('📄 Created ' . count($assignments) . ' assignments');
     }
 }

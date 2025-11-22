@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Web\Teacher\Assessment;
 use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\ClassModel;
+use App\Models\Grade;
+use App\Models\AssessmentSubmission;
 use App\Support\Service\FlashMessage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class TeacherAssessmentController extends Controller
 {
@@ -77,12 +81,29 @@ class TeacherAssessmentController extends Controller
 
         // Only allow access to teacher's classes
         $class = null;
+        $students = [];
         if ($classId) {
             $class = $teacher->classes()
                 ->select('classes.*')
                 ->where('classes.id', $classId)
                 ->where('classes.status', 'active')
                 ->first();
+
+            // Get students enrolled in this class
+            if ($class) {
+                $students = \App\Models\Enrollment::where('class_id', $classId)
+                    ->where('status', 'active')
+                    ->with('student.user:id,first_name,last_name,email')
+                    ->get()
+                    ->map(function ($enrollment) {
+                        return [
+                            'id' => $enrollment->student->id,
+                            'student_id' => $enrollment->student->student_id,
+                            'name' => $enrollment->student->user->full_name,
+                            'email' => $enrollment->student->user->email,
+                        ];
+                    });
+            }
         }
 
         $classes = $teacher->classes()
@@ -93,6 +114,7 @@ class TeacherAssessmentController extends Controller
         return Inertia::render('Teacher/Assessment/Create', [
             'classes' => $classes,
             'selectedClass' => $class,
+            'students' => $students,
         ]);
     }
 
@@ -117,23 +139,46 @@ class TeacherAssessmentController extends Controller
             'max_score' => 'required|numeric|min:1',
             'assessment_date' => 'required|date',
             'description' => 'nullable|string',
+            'student_ids' => 'nullable|array',
+            'student_ids.*' => 'exists:students,id',
         ]);
 
-        Assessment::create([
-            'class_id' => $validated['class_id'],
-            'assessment_type' => $validated['assessment_type'],
-            'assessment_name' => $validated['assessment_name'],
-            'score' => $validated['score'] ?? null,
-            'max_score' => $validated['max_score'],
-            'assessment_date' => $validated['assessment_date'],
-            'description' => $validated['description'] ?? null,
-            'status' => 'active',
-            'created_by' => Auth::id(),
-        ]);
+        DB::beginTransaction();
+        try {
+            $assessment = Assessment::create([
+                'class_id' => $validated['class_id'],
+                'assessment_type' => $validated['assessment_type'],
+                'assessment_name' => $validated['assessment_name'],
+                'score' => $validated['score'] ?? null,
+                'max_score' => $validated['max_score'],
+                'assessment_date' => $validated['assessment_date'],
+                'description' => $validated['description'] ?? null,
+                'status' => 'active',
+                'created_by' => Auth::id(),
+            ]);
 
-        FlashMessage::success('Assessment created successfully.');
-        
-        return redirect()->route('teacher.assessments.index');
+            // Create grade entries for selected students
+            if (!empty($validated['student_ids'])) {
+                foreach ($validated['student_ids'] as $studentId) {
+                    Grade::create([
+                        'student_id' => $studentId,
+                        'class_id' => $validated['class_id'],
+                        'assessment_id' => $assessment->id,
+                        'score' => 0, // Default score, teacher can grade later
+                        'graded_by' => Auth::id(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            FlashMessage::success('Assessment created successfully and assigned to ' . count($validated['student_ids'] ?? []) . ' student(s).');
+            
+            return redirect()->route('teacher.assessments.index');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Failed to create assessment: ' . $e->getMessage()]);
+        }
     }
 
     public function edit($id)
@@ -204,6 +249,129 @@ class TeacherAssessmentController extends Controller
         FlashMessage::success('Assessment updated successfully.');
         
         return redirect()->route('teacher.assessments.index');
+    }
+
+    public function show(Request $request, $id)
+    {
+        $user = Auth::user();
+        $teacher = $user->teacher;
+
+        if (!$teacher) {
+            return redirect()->route('teacher.login')
+                ->withErrors(['email' => 'Teacher record not found.']);
+        }
+
+        // Verify the assessment belongs to this teacher's class
+        $classIds = $teacher->classes()->select('classes.id')->pluck('id')->toArray();
+        $assessment = Assessment::with(['classModel', 'createdBy'])
+            ->whereIn('class_id', $classIds)
+            ->findOrFail($id);
+
+        // Get all students assigned to this assessment with their grades and submissions
+        $studentsWithGrades = Grade::where('assessment_id', $id)
+            ->with([
+                'student.user',
+                'gradedBy',
+                'student.submissions' => function ($query) use ($id) {
+                    $query->where('assessment_id', $id);
+                }
+            ])
+            ->get()
+            ->map(function ($grade) {
+                $submission = $grade->student->submissions->first();
+                return [
+                    'id' => $grade->id,
+                    'student_id' => $grade->student_id,
+                    'student_name' => $grade->student->user->full_name ?? 'N/A',
+                    'student_number' => $grade->student->student_id,
+                    'student_email' => $grade->student->user->email ?? 'N/A',
+                    'score' => $grade->score,
+                    'feedback' => $grade->feedback,
+                    'graded_by' => $grade->gradedBy ? $grade->gradedBy->full_name : null,
+                    'updated_at' => $grade->updated_at,
+                    'has_submission' => $submission !== null,
+                    'submission' => $submission ? [
+                        'id' => $submission->id,
+                        'file_name' => $submission->file_name,
+                        'file_path' => $submission->file_path,
+                        'file_size' => $submission->file_size,
+                        'comments' => $submission->comments,
+                        'submitted_at' => $submission->submitted_at,
+                    ] : null,
+                ];
+            });
+
+        return Inertia::render('Teacher/Assessment/Show', [
+            'assessment' => $assessment,
+            'students' => $studentsWithGrades,
+            'highlightSubmission' => $request->query('submission') ? (int)$request->query('submission') : null,
+        ]);
+    }
+
+    public function updateGrade(Request $request, $id)
+    {
+        $user = Auth::user();
+        $teacher = $user->teacher;
+
+        if (!$teacher) {
+            return redirect()->route('teacher.login')
+                ->withErrors(['email' => 'Teacher record not found.']);
+        }
+
+        $request->validate([
+            'score' => 'required|numeric|min:0',
+            'feedback' => 'nullable|string|max:1000',
+        ]);
+
+        $grade = Grade::findOrFail($id);
+
+        // Verify the grade's assessment belongs to this teacher's class
+        $classIds = $teacher->classes()->select('classes.id')->pluck('id')->toArray();
+        $assessment = Assessment::whereIn('class_id', $classIds)->findOrFail($grade->assessment_id);
+
+        // Validate score doesn't exceed max_score
+        if ($request->score > $assessment->max_score) {
+            return redirect()->back()
+                ->withErrors(['score' => "Score cannot exceed maximum score of {$assessment->max_score}"]);
+        }
+
+        $grade->update([
+            'score' => $request->score,
+            'feedback' => $request->feedback,
+            'graded_by' => Auth::id(),
+        ]);
+
+        FlashMessage::success('Grade updated successfully.');
+
+        return redirect()->back();
+    }
+
+    public function downloadSubmission($submissionId)
+    {
+        $user = Auth::user();
+        $teacher = $user->teacher;
+
+        if (!$teacher) {
+            return redirect()->route('teacher.login')
+                ->withErrors(['email' => 'Teacher record not found.']);
+        }
+
+        $submission = AssessmentSubmission::with('assessment')->findOrFail($submissionId);
+
+        // Verify the submission's assessment belongs to this teacher's class
+        $classIds = $teacher->classes()->select('classes.id')->pluck('id')->toArray();
+        if (!in_array($submission->assessment->class_id, $classIds)) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        if (!$submission->file_path) {
+            abort(404, 'Submission file not found');
+        }
+
+        return Storage::disk('public')->download(
+            $submission->file_path,
+            $submission->file_name
+        );
     }
 
     public function destroy($id)

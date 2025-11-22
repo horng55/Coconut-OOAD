@@ -96,13 +96,27 @@ const submit = () => {
                                 :disabled="!form.class_id"
                                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                            <option value="">Select Student</option>
-                            <option v-for="student in (students || [])" :key="student.id" :value="student.id">
-                                {{ student.name }} ({{ student.student_id }})
-                            </option>
-                        </select>
-                        <div v-if="form.errors.student_id" class="text-red-500 text-sm mt-1">{{ form.errors.student_id }}</div>
-                        <p v-if="!form.class_id" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Please select a class first</p>
+                                <option value="">Select Student</option>
+                                <option v-for="student in (students || [])" :key="student.id" :value="student.id">
+                                    {{ student.name }} ({{ student.student_id }})
+                                </option>
+                            </select>
+                            <div v-if="form.errors.student_id" class="text-red-500 text-sm mt-1">{{ form.errors.student_id }}</div>
+                            <p v-if="!form.class_id" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Please select a class first</p>
+                            <div v-else-if="form.class_id && (!students || students.length === 0)" class="mt-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                                <p class="text-xs text-amber-800 dark:text-amber-300 mb-2">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    No students enrolled in this class yet.
+                                </p>
+                                <Link
+                                    :href="route('teacher.classes.show', form.class_id)"
+                                    class="inline-flex items-center gap-2 text-xs bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded transition-colors"
+                                >
+                                    <i class="fas fa-user-plus"></i>
+                                    Add Students to Class
+                                </Link>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="md:col-span-2">
@@ -158,44 +172,45 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Student Score <span class="text-red-500">*</span>
-                            <span v-if="selectedAssessment" class="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                (Max: {{ selectedAssessment.max_score }})
-                            </span>
-                        </label>
-                        <input
-                            v-model="form.score"
-                            type="number"
-                            required
-                            :min="0"
-                            :max="selectedAssessment ? selectedAssessment.max_score : undefined"
-                            step="0.01"
-                            :placeholder="selectedAssessment ? `0 - ${selectedAssessment.max_score}` : '0'"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                        />
-                        <div v-if="form.errors.score" class="text-red-500 text-sm mt-1">{{ form.errors.score }}</div>
-                        <p v-if="selectedAssessment && form.score && parseFloat(form.score) > parseFloat(selectedAssessment.max_score)" class="text-xs text-red-600 dark:text-red-400 mt-1">
-                            <i class="fas fa-exclamation-triangle"></i> Score cannot exceed maximum score of {{ selectedAssessment.max_score }}
-                        </p>
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Student Score <span class="text-red-500">*</span>
+                                <span v-if="selectedAssessment" class="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                                    (Max: {{ selectedAssessment.max_score }})
+                                </span>
+                            </label>
+                            <input
+                                v-model="form.score"
+                                type="number"
+                                required
+                                :min="0"
+                                :max="selectedAssessment ? selectedAssessment.max_score : undefined"
+                                step="0.01"
+                                :placeholder="selectedAssessment ? `0 - ${selectedAssessment.max_score}` : '0'"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                            />
+                            <div v-if="form.errors.score" class="text-red-500 text-sm mt-1">{{ form.errors.score }}</div>
+                            <p v-if="selectedAssessment && form.score && parseFloat(form.score) > parseFloat(selectedAssessment.max_score)" class="text-xs text-red-600 dark:text-red-400 mt-1">
+                                <i class="fas fa-exclamation-triangle"></i> Score cannot exceed maximum score of {{ selectedAssessment.max_score }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Comments
+                            </label>
+                            <textarea
+                                v-model="form.comments"
+                                rows="3"
+                                placeholder="Additional comments or notes..."
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                            ></textarea>
+                            <div v-if="form.errors.comments" class="text-red-500 text-sm mt-1">{{ form.errors.comments }}</div>
+                        </div>
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Comments
-                        </label>
-                        <textarea
-                            v-model="form.comments"
-                            rows="3"
-                            placeholder="Additional comments or notes..."
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                        ></textarea>
-                        <div v-if="form.errors.comments" class="text-red-500 text-sm mt-1">{{ form.errors.comments }}</div>
-                    </div>
-                </div>
-
-                <div v-if="form.score && selectedAssessment" class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                    <div v-if="form.score && selectedAssessment" class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Percentage:</span>
                         <span class="text-lg font-bold text-blue-600 dark:text-blue-400">
