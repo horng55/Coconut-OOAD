@@ -27,7 +27,7 @@ import {Link} from "@inertiajs/vue3";
                     </div>
                 </div>
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent mb-4 leading-tight">
-                    School Management System
+                    Welcome to Coconut School Management
                 </h1>
                 <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-3 max-w-2xl mx-auto">
                     Streamlined platform for managing classes, assignments, and grades
