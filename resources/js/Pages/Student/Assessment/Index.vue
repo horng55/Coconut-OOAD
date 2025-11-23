@@ -3,7 +3,9 @@ import {ref} from "vue";
 import {router, Link} from "@inertiajs/vue3";
 import StudentLayout from "../../../Layouts/StudentLayout.vue";
 
-const title = [{label: "Assessments", href: route("student.assessments.index")}];
+const route = window.route || ((name) => `#${name}`);
+
+const title = [{label: "Assessments", href: "/student/assessments"}];
 
 const props = defineProps({
     assessments: Object,
@@ -16,7 +18,7 @@ const selectedClass = ref(props.filters?.class_id || "");
 const selectedType = ref(props.filters?.assessment_type || "");
 
 const handleSearch = () => {
-    router.get(route('student.assessments.index'), {
+    router.get('/student/assessments', {
         search: searchQuery.value,
         class_id: selectedClass.value,
         assessment_type: selectedType.value
@@ -86,8 +88,8 @@ const getGradeStatus = (assessment) => {
                         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                     >
                         <option value="">All Classes</option>
-                        <option v-for="classItem in classes" :key="classItem.id" :value="classItem.id">
-                            {{ classItem.name }}
+                        <option v-for="(classItem, idx) in classes" :key="classItem?.id || idx" :value="classItem?.id" v-if="classItem?.id">
+                            {{ classItem?.name }}
                         </option>
                     </select>
                     <select
@@ -109,40 +111,57 @@ const getGradeStatus = (assessment) => {
             <!-- Assessments Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div
-                    v-for="assessment in assessments.data"
-                    :key="assessment.id"
+                    v-for="(assessment, index) in assessments?.data || []"
+                    :key="assessment?.id || index"
                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden"
+                    v-if="assessment?.id"
                 >
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
                                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-1">
-                                    {{ assessment.assessment_name }}
+                                    {{ assessment?.assessment_name || 'Untitled Assessment' }}
                                 </h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    {{ assessment.class_model?.name }}
+                                    {{ assessment?.class_model?.name || 'N/A' }}
                                 </p>
                             </div>
-                            <span :class="['px-3 py-1 rounded-full text-xs font-medium capitalize', getTypeColor(assessment.assessment_type)]">
-                                {{ assessment.assessment_type?.replace('_', ' ') }}
+                            <span :class="['px-3 py-1 rounded-full text-xs font-medium capitalize', getTypeColor(assessment?.assessment_type)]">
+                                {{ assessment?.assessment_type?.replace('_', ' ') || 'N/A' }}
                             </span>
                         </div>
 
                         <div class="space-y-3 mb-4">
                             <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                                 <i class="fas fa-calendar w-4"></i>
-                                <span>{{ new Date(assessment.assessment_date).toLocaleDateString() }}</span>
+                                <span>{{ assessment?.assessment_date ? new Date(assessment.assessment_date).toLocaleDateString() : 'N/A' }}</span>
                             </div>
                             <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                                 <i class="fas fa-star w-4"></i>
-                                <span>Max Score: {{ assessment.max_score }}</span>
+                                <span>Max Score: {{ assessment?.max_score || 0 }}</span>
                             </div>
-                            <div v-if="assessment.grades?.[0]" class="flex items-center gap-2 text-sm">
+                            
+                            <!-- Submission Status -->
+                            <div v-if="assessment?.submissions && assessment.submissions.length > 0" class="flex items-center gap-2 text-sm">
+                                <i class="fas fa-check-circle w-4 text-green-600 dark:text-green-400"></i>
+                                <span class="font-semibold text-green-600 dark:text-green-400">Submitted</span>
+                            </div>
+                            <div v-else class="flex items-center gap-2 text-sm">
+                                <i class="fas fa-exclamation-circle w-4 text-orange-600 dark:text-orange-400"></i>
+                                <span class="font-semibold text-orange-600 dark:text-orange-400">Not Submitted</span>
+                            </div>
+                            
+                            <!-- Grade Status -->
+                            <div v-if="assessment?.grades?.[0] && assessment.grades[0].score > 0" class="flex items-center gap-2 text-sm">
                                 <i :class="['fas w-4', getGradeStatus(assessment).icon, getGradeStatus(assessment).color]"></i>
                                 <span :class="['font-semibold', getGradeStatus(assessment).color]">
-                                    Your Score: {{ assessment.grades[0].score }} / {{ assessment.max_score }}
-                                    ({{ ((assessment.grades[0].score / assessment.max_score) * 100).toFixed(1) }}%)
+                                    Your Score: {{ assessment.grades[0].score }} / {{ assessment?.max_score || 0 }}
+                                    ({{ ((assessment.grades[0].score / (assessment?.max_score || 1)) * 100).toFixed(1) }}%)
                                 </span>
+                            </div>
+                            <div v-else-if="assessment?.submissions && assessment.submissions.length > 0" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-clock w-4"></i>
+                                <span>Waiting for grade</span>
                             </div>
                             <div v-else class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                                 <i class="fas fa-clock w-4"></i>
@@ -150,16 +169,34 @@ const getGradeStatus = (assessment) => {
                             </div>
                         </div>
 
-                        <Link
-                            :href="route('student.assessments.show', assessment.id)"
-                            class="block w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-center py-2 rounded-lg transition-all duration-200 font-medium"
-                        >
-                            View Details
-                        </Link>
+                        <div class="flex gap-2">
+                            <Link
+                                v-if="!assessment?.submissions || assessment.submissions.length === 0"
+                                :href="`/student/assessments/${assessment?.id}`"
+                                class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-center py-3 rounded-lg transition-all duration-200 font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                            >
+                                <i class="fas fa-upload"></i>
+                                Upload PDF
+                            </Link>
+                            <Link
+                                v-else
+                                :href="`/student/assessments/${assessment?.id}`"
+                                class="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-center py-3 rounded-lg transition-all duration-200 font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                            >
+                                <i class="fas fa-check-circle"></i>
+                                View Submission
+                            </Link>
+                            <Link
+                                :href="`/student/assessments/${assessment?.id}`"
+                                class="px-4 bg-gray-500 hover:bg-gray-600 text-white text-center py-3 rounded-lg transition-all duration-200 font-medium flex items-center justify-center"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
-                <div v-if="!assessments.data || assessments.data.length === 0" class="col-span-full">
+                <div v-if="!assessments?.data || assessments.data.length === 0" class="col-span-full">
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
                         <i class="fas fa-clipboard-list text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
                         <p class="text-gray-500 dark:text-gray-400 text-lg">No assessments found</p>
@@ -168,11 +205,12 @@ const getGradeStatus = (assessment) => {
             </div>
 
             <!-- Pagination -->
-            <div v-if="assessments.links" class="mt-6 flex justify-center gap-2">
+            <div v-if="assessments?.links" class="mt-6 flex justify-center gap-2">
                 <Link
                     v-for="(link, index) in assessments.links"
                     :key="index"
-                    :href="link.url"
+                    :href="link?.url"
+                    v-if="link?.url !== null"
                     :class="[
                         'px-4 py-2 rounded-lg transition-colors duration-200',
                         link.active

@@ -2,6 +2,8 @@
 import {Link, useForm} from "@inertiajs/vue3";
 import StudentLayout from "../../../Layouts/StudentLayout.vue";
 
+const route = window.route || ((name) => `#${name}`);
+
 const props = defineProps({
     assessment: Object,
     myGrade: Object,
@@ -9,8 +11,8 @@ const props = defineProps({
 });
 
 const title = [
-    {label: "Assessments", href: route("student.assessments.index")},
-    {label: "Details", href: route("student.assessments.show", props.assessment.id)}
+    {label: "Assessments", href: "/student/assessments"},
+    {label: "Details", href: `/student/assessments/${props.assessment.id}`}
 ];
 
 const form = useForm({
@@ -23,11 +25,11 @@ const handleFileChange = (event) => {
 };
 
 const submitAssessment = () => {
-    form.post(route("student.assessments.submit", props.assessment.id));
+    form.post(`/student/assessments/${props.assessment.id}/submit`);
 };
 
 const downloadSubmission = () => {
-    window.location.href = route('student.assessments.download-submission', props.assessment.id);
+    window.location.href = `/student/assessments/${props.assessment.id}/download-submission`;
 };
 
 const getTypeColor = (type) => {
@@ -57,7 +59,7 @@ const getGradeColor = (percentage) => {
             <div class="mb-6 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <Link
-                        :href="route('student.assessments.index')"
+                        href="/student/assessments"
                         class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                     >
                         <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
@@ -296,7 +298,7 @@ const getGradeColor = (percentage) => {
                                         <span v-else>Submit Assessment</span>
                                     </button>
                                     <Link
-                                        :href="route('student.assessments.index')"
+                                        href="/student/assessments"
                                         class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-2"
                                     >
                                         <i class="fas fa-times"></i>

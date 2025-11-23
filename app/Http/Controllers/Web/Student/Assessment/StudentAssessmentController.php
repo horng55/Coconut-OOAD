@@ -20,18 +20,35 @@ class StudentAssessmentController extends Controller
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
+        \Log::info('Student Assessment Index', [
+            'student_id' => $student->id,
+            'user_id' => auth()->id(),
+        ]);
+
         // Get all classes the student is enrolled in
         $enrolledClassIds = $student->enrollments()
             ->where('status', 'active')
             ->pluck('class_id');
 
+        \Log::info('Enrolled Classes', ['class_ids' => $enrolledClassIds->toArray()]);
+
         // Get assessments for enrolled classes
-        $query = Assessment::with(['classModel', 'createdBy', 'grades' => function ($query) use ($student) {
-            $query->where('student_id', $student->id);
-        }])
+        $query = Assessment::with(['classModel', 'createdBy', 
+            'grades' => function ($query) use ($student) {
+                $query->where('student_id', $student->id);
+            },
+            'submissions' => function ($query) use ($student) {
+                $query->where('student_id', $student->id);
+            }
+        ])
             ->whereIn('class_id', $enrolledClassIds)
             ->where('status', 'active')
             ->orderBy('assessment_date', 'desc');
+
+        \Log::info('Assessment Query SQL', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+        ]);
 
         // Apply filters
         if ($request->filled('search')) {
@@ -53,7 +70,14 @@ class StudentAssessmentController extends Controller
 
         $assessments = $query->paginate(10)->withQueryString();
 
-        // Get student's enrolled classes for filter
+        \Log::info('Assessments Found', [
+            'count' => $assessments->count(),
+            'total' => $assessments->total(),
+            'assessment_ids' => $assessments->pluck('id')->toArray(),
+            'first_assessment' => $assessments->first() ? $assessments->first()->toArray() : null,
+        ]);
+
+        //Get student's enrolled classes for filter
         $classes = $student->enrollments()
             ->with('classModel')
             ->where('status', 'active')

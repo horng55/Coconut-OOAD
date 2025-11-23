@@ -30,9 +30,18 @@ const form = useForm({
 });
 
 const submit = () => {
+    console.log('Form data:', form.data());
+    console.log('Form errors before submit:', form.errors);
     form.post(route('admin.students.store'), {
         onSuccess: () => {
+            console.log('Student created successfully');
             router.visit(route('admin.students.index'));
+        },
+        onError: (errors) => {
+            console.error('Validation errors:', errors);
+            console.error('All form errors:', form.errors);
+            // Scroll to top to see error message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     });
 };
@@ -48,6 +57,18 @@ const submit = () => {
             icon-bg="from-emerald-500/20 to-teal-500/20"
         >
             <form @submit.prevent="submit" class="p-6 space-y-6">
+                <!-- Display general errors -->
+                <div v-if="form.errors && Object.keys(form.errors).length > 0" class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <h4 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
+                        <i class="fas fa-exclamation-circle mr-2"></i>Please fix the following errors:
+                    </h4>
+                    <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
+                        <li v-for="(error, key) in form.errors" :key="key">
+                            <strong>{{ key }}:</strong> {{ error }}
+                        </li>
+                    </ul>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

@@ -37,13 +37,30 @@ watch(() => form.class_id, (newClassId) => {
 });
 
 const submit = () => {
+    console.log('Submit function called');
+    console.log('Form data:', form.data());
+    console.log('Form errors before submit:', form.errors);
+    
     form.post(route('teacher.assessments.store'), {
         onSuccess: () => {
+            console.log('Assessment created successfully');
             // Reset form after successful creation
             form.reset();
             form.class_id = props.selectedClass?.id || '';
             form.max_score = '100';
             form.assessment_date = new Date().toISOString().split('T')[0];
+        },
+        onError: (errors) => {
+            console.error('Validation errors received:', errors);
+            console.error('Full error object:', JSON.stringify(errors, null, 2));
+            // Display errors to user
+            Object.keys(errors).forEach(key => {
+                console.error(`Error for ${key}:`, errors[key]);
+            });
+        },
+        onFinish: () => {
+            console.log('Form submission finished');
+            console.log('Form errors after submit:', form.errors);
         }
     });
 };
@@ -62,6 +79,21 @@ const submit = () => {
                 </div>
 
                 <form @submit.prevent="submit" class="p-6 space-y-6">
+                    <!-- Error Summary -->
+                    <div v-if="Object.keys(form.errors).length > 0" class="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl mt-1"></i>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-red-800 dark:text-red-300 mb-2">Validation Errors</h3>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li v-for="(error, field) in form.errors" :key="field" class="text-sm text-red-700 dark:text-red-400">
+                                        <strong>{{ field }}:</strong> {{ error }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

@@ -119,27 +119,29 @@ class StudentController extends Controller
 
             // Assign teachers if selected
             if (!empty($validated['teacher_ids'])) {
-                // Get classes for the teachers to create proper relationships
+                // Get all classes for the selected teachers
                 $teacherClasses = DB::table('class_teacher')
                     ->whereIn('teacher_id', $validated['teacher_ids'])
-                    ->pluck('class_id', 'teacher_id');
+                    ->select('teacher_id', 'class_id')
+                    ->get();
 
-                foreach ($validated['teacher_ids'] as $teacherId) {
-                    // Only create enrollment if there's a class associated with this teacher
-                    // and the student isn't already enrolled
-                    if (isset($teacherClasses[$teacherId])) {
-                        $classId = $teacherClasses[$teacherId];
-                        $exists = Enrollment::where('student_id', $student->id)
-                            ->where('class_id', $classId)
-                            ->exists();
+                if ($teacherClasses->isNotEmpty()) {
+                    foreach ($teacherClasses as $tc) {
+                        // Verify the object has the required properties
+                        if (isset($tc->class_id) && isset($tc->teacher_id)) {
+                            // Check if student isn't already enrolled in this class
+                            $exists = Enrollment::where('student_id', $student->id)
+                                ->where('class_id', $tc->class_id)
+                                ->exists();
 
-                        if (!$exists) {
-                            Enrollment::create([
-                                'student_id' => $student->id,
-                                'class_id' => $classId,
-                                'enrollment_date' => now(),
-                                'status' => 'active',
-                            ]);
+                            if (!$exists) {
+                                Enrollment::create([
+                                    'student_id' => $student->id,
+                                    'class_id' => $tc->class_id,
+                                    'enrollment_date' => now(),
+                                    'status' => 'active',
+                                ]);
+                            }
                         }
                     }
                 }
@@ -151,7 +153,12 @@ class StudentController extends Controller
                 ->with('success', 'Student created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to create student: ' . $e->getMessage()]);
+            \Log::error('Student creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $request->except('password')
+            ]);
+            return back()->withErrors(['error' => 'Failed to create student: ' . $e->getMessage()])->withInput();
         }
     }
 

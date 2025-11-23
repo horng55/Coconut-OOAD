@@ -128,8 +128,15 @@ class TeacherAssessmentController extends Controller
                 ->withErrors(['email' => 'Teacher record not found.']);
         }
 
+        \Log::info('Assessment Store Request', [
+            'request_data' => $request->all(),
+            'teacher_id' => $teacher->id,
+        ]);
+
         // Verify the class belongs to this teacher
         $classIds = $teacher->classes()->select('classes.id')->pluck('id')->toArray();
+
+        \Log::info('Teacher Class IDs', ['class_ids' => $classIds]);
 
         $validated = $request->validate([
             'class_id' => 'required|exists:classes,id|in:' . implode(',', $classIds),
@@ -142,6 +149,8 @@ class TeacherAssessmentController extends Controller
             'student_ids' => 'nullable|array',
             'student_ids.*' => 'exists:students,id',
         ]);
+
+        \Log::info('Validated Data', ['validated' => $validated]);
 
         DB::beginTransaction();
         try {
@@ -164,6 +173,10 @@ class TeacherAssessmentController extends Controller
                         'student_id' => $studentId,
                         'class_id' => $validated['class_id'],
                         'assessment_id' => $assessment->id,
+                        'assessment_type' => $validated['assessment_type'],
+                        'assessment_name' => $validated['assessment_name'],
+                        'max_score' => $validated['max_score'],
+                        'assessment_date' => $validated['assessment_date'],
                         'score' => 0, // Default score, teacher can grade later
                         'graded_by' => Auth::id(),
                     ]);
@@ -172,11 +185,17 @@ class TeacherAssessmentController extends Controller
 
             DB::commit();
 
+            \Log::info('Assessment created successfully', ['assessment_id' => $assessment->id]);
+
             FlashMessage::success('Assessment created successfully and assigned to ' . count($validated['student_ids'] ?? []) . ' student(s).');
             
             return redirect()->route('teacher.assessments.index');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Assessment creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return back()->withErrors(['error' => 'Failed to create assessment: ' . $e->getMessage()]);
         }
     }

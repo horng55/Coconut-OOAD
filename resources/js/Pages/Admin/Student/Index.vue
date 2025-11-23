@@ -72,7 +72,7 @@ const deleteStudent = (id) => {
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         <tr 
                             v-for="(student, index) in students?.data || []" 
-                            :key="student.id"
+                            :key="student?.id || index"
                             class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
                         >
                             <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
@@ -82,32 +82,32 @@ const deleteStudent = (id) => {
                             </td>
                             <td class="px-6 py-4">
                                 <div>
-                                    <span class="text-gray-800 dark:text-gray-200 font-medium">{{ student.user?.full_name || 'N/A' }}</span>
-                                    <span v-if="student.user?.username" class="text-gray-600 dark:text-gray-400 text-xs block">@{{ student.user.username }}</span>
+                                    <span class="text-gray-800 dark:text-gray-200 font-medium">{{ student?.user?.full_name || 'N/A' }}</span>
+                                    <span v-if="student?.user?.username" class="text-gray-600 dark:text-gray-400 text-xs block">@{{ student.user.username }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                                {{ student.user?.email || 'N/A' }}
+                                {{ student?.user?.email || 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                                {{ student.student_id || 'N/A' }}
+                                {{ student?.student_id || 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                                {{ student.parent?.user?.full_name || 'N/A' }}
+                                {{ student?.parent?.user?.full_name || 'N/A' }}
                             </td>
                             <td class="px-6 py-4">
                                 <span :class="[
                                     'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium',
-                                    student.status === 'active' 
+                                    student?.status === 'active' 
                                         ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
                                         : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                                 ]">
-                                    <i :class="student.status === 'active' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
-                                    {{ student.status || 'N/A' }}
+                                    <i :class="student?.status === 'active' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                                    {{ student?.status || 'N/A' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex items-center justify-center gap-2">
+                                <div v-if="student?.id" class="flex items-center justify-center gap-2">
                                     <Link
                                         :href="route('admin.students.show', student.id)"
                                         class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center gap-1 text-sm"
@@ -129,6 +129,9 @@ const deleteStudent = (id) => {
                                     >
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                </div>
+                                <div v-else class="text-center text-gray-400 text-sm">
+                                    Invalid data
                                 </div>
                             </td>
                         </tr>

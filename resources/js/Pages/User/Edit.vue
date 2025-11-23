@@ -4,8 +4,13 @@ import {router, useForm, Link} from "@inertiajs/vue3";
 import App from "../../Layouts/App.vue";
 import AdminPageWrapper from "../../Components/AdminPageWrapper.vue";
 
+const route = window.route || ((name, params) => {
+    if (params) return `/${name.replace('.', '/')}/${params}`;
+    return `/${name.replace('.', '/')}`;
+});
+
 const title = [
-    {label: "Users", href: route("users.index")},
+    {label: "Users", href: "/users"},
     {label: "Edit User", href: "#"}
 ];
 
@@ -30,9 +35,9 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('users.update', props.user.id), {
+    form.post(`/users/${props.user.id}`, {
         onSuccess: () => {
-            router.visit(route('users.index'));
+            router.visit('/users');
         }
     });
 };

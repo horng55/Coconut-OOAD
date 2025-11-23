@@ -5,7 +5,12 @@ import App from "../../Layouts/App.vue";
 import AdminPageWrapper from "../../Components/AdminPageWrapper.vue";
 import Pagination from "../../Components/Pagination.vue";
 
-const title = [{label: "Users", href: route("users.index")}];
+const route = window.route || ((name, params) => {
+    if (params) return `/${name.replace(/\./g, '/')}/${params}`;
+    return `/${name.replace(/\./g, '/')}`;
+});
+
+const title = [{label: "Users", href: "/users"}];
 
 const props = defineProps({
     paginate: Object,
@@ -15,7 +20,7 @@ const props = defineProps({
 const searchQuery = ref(props.search || "");
 
 const handleSearch = () => {
-    router.get(route('users.index'), { search: searchQuery.value }, {
+    router.get('/users', { search: searchQuery.value }, {
         preserveState: true,
         preserveScroll: true
     });
@@ -23,7 +28,7 @@ const handleSearch = () => {
 
 const deleteUser = (id) => {
     if (confirm('Are you sure you want to delete this user?')) {
-        router.delete(route('users.delete', id));
+        router.delete(`/users/${id}`);
     }
 };
 </script>

@@ -1,7 +1,10 @@
 <script setup>
 import {computed} from "vue";
-import {Link} from "@inertiajs/vue3";
+import {Link, usePage} from "@inertiajs/vue3";
 import StudentLayout from "../../Layouts/StudentLayout.vue";
+
+const page = usePage();
+const route = window.route || ((name) => `#${name}`);
 
 const title = [{label: "Dashboard", href: route("student.dashboard")}];
 
@@ -130,8 +133,9 @@ const averageGrade = computed(() => {
                 <div class="p-6">
                     <div v-if="recentGrades && recentGrades.length > 0" class="space-y-3">
                         <div 
-                            v-for="grade in recentGrades.slice(0, 5)" 
-                            :key="grade.id"
+                            v-for="(grade, index) in recentGrades.slice(0, 5)" 
+                            :key="grade?.id || index"
+                            v-if="grade?.id"
                             class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                         >
                             <div class="flex items-center gap-3">
@@ -139,13 +143,16 @@ const averageGrade = computed(() => {
                                     <i class="fas fa-file-alt text-white text-sm"></i>
                                 </div>
                                 <div>
-                                    <p class="font-medium text-gray-900 dark:text-white">{{ grade.assessment?.title || 'Assessment' }}</p>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ grade.class_model?.name || 'N/A' }}</p>
+                                    <p class="font-medium text-gray-900 dark:text-white">{{ grade.assessment_name || grade.assessment?.assessment_name || 'Assessment' }}</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ grade.class_model?.name || 'N/A' }} • {{ grade.assessment_type }}</p>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <p class="font-bold text-gray-900 dark:text-white">{{ grade.percentage }}%</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ grade.score }}/{{ grade.max_score }}</p>
+                                <p class="font-bold text-gray-900 dark:text-white">
+                                    {{ grade.percentage ? Math.round(grade.percentage) + '%' : 
+                                       (grade.score && grade.max_score ? ((grade.score / grade.max_score) * 100).toFixed(1) + '%' : 'N/A') }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ grade.score || 0 }}/{{ grade.max_score || 0 }}</p>
                             </div>
                         </div>
                     </div>
@@ -156,34 +163,64 @@ const averageGrade = computed(() => {
                 </div>
             </div>
 
-            <!-- Upcoming Assignments -->
-            <div v-if="assignments && assignments.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+            <!-- Recent Assignments / Submit Assessment -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
                 <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <i class="fas fa-tasks text-blue-500"></i>
-                        Recent Assignments
+                        <i class="fas fa-file-upload text-emerald-500"></i>
+                        Submit Assessments
                     </h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Click Submit to upload your PDF assignments</p>
                 </div>
                 <div class="p-6">
-                    <div class="space-y-3">
+                    <div v-if="assignments && assignments.length > 0" class="space-y-3">
                         <div 
-                            v-for="assignment in assignments.slice(0, 5)" 
-                            :key="assignment.id"
-                            class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                            v-for="(assignment, index) in assignments.slice(0, 5)" 
+                            :key="assignment?.id || index"
+                            class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-clipboard-list text-white text-sm"></i>
+                            <div class="flex items-center gap-3 flex-1">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-md">
+                                    <i class="fas fa-clipboard-list text-white text-lg"></i>
                                 </div>
-                                <div>
-                                    <p class="font-medium text-gray-900 dark:text-white">{{ assignment.title }}</p>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">Due: {{ new Date(assignment.due_date).toLocaleDateString() }}</p>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900 dark:text-white">{{ assignment.assessment_name || 'Untitled' }}</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                        <i class="fas fa-book text-xs"></i>
+                                        {{ assignment.class_model?.name || 'N/A' }}
+                                        <span class="mx-1">•</span>
+                                        <i class="fas fa-calendar text-xs"></i>
+                                        {{ assignment.assessment_date ? new Date(assignment.assessment_date).toLocaleDateString() : 'No date' }}
+                                    </p>
                                 </div>
                             </div>
-                            <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg text-sm">
-                                {{ assignment.max_score }} pts
-                            </span>
+                            <div class="flex items-center gap-3">
+                                <span class="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-semibold capitalize border border-blue-200 dark:border-blue-800">
+                                    {{ assignment.assessment_type ? assignment.assessment_type.replace('_', ' ') : 'N/A' }}
+                                </span>
+                                <Link
+                                    :href="`/student/assessments/${assignment.id}`"
+                                    class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg"
+                                >
+                                    <i class="fas fa-upload"></i>
+                                    Submit PDF
+                                </Link>
+                            </div>
                         </div>
+                    </div>
+                    <div v-else class="text-center py-12">
+                        <div class="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-clipboard-check text-3xl text-emerald-500"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">All Caught Up!</h3>
+                        <p class="text-gray-500 dark:text-gray-400 mb-4">You have no pending assessments to submit at the moment.</p>
+                        <Link
+                            :href="'/student/assessments'"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
+                        >
+                            <i class="fas fa-list"></i>
+                            View All Assessments
+                        </Link>
                     </div>
                 </div>
             </div>
