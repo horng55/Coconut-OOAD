@@ -20,24 +20,19 @@ A comprehensive school management system built with Laravel 11 and Vue.js (Inert
 ### Portal Access
 - **Admin Portal**: Full system access with comprehensive management tools and enhanced dashboard featuring:
   - Real-time statistics (teachers, students, parents, classes, enrollments, subjects, fees, attendance rate, average grades)
-  - Pending payments alert with quick access to fee management
   - Recent enrollments and announcements tracking
-  - Fee payment overview with total fees, collected amount, pending amount, and pending count
   - Quick actions for common tasks
   - System status monitoring
 - **Teacher Portal**: Enhanced portal with:
   - Dashboard overview of assigned classes, recent attendance, and grades
   - Class management with student lists
   - Assessment creation and management
-  - Attendance recording and editing
   - Grade management with automatic validation
-  - Announcement viewing
 - **Student Portal**: Enhanced portal with:
-  - Dashboard overview of enrolled classes, attendance, and grades
+  - Dashboard overview of enrolled classes and grades
   - Class viewing with teachers and subjects
-  - Attendance records viewing
   - Grade viewing linked to assessments
-  - Announcement viewing
+ 
 
 
 ### Additional Features
