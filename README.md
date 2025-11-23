@@ -1,4 +1,4 @@
-# School Management System
+#Coconut Management System
 
 A comprehensive school management system built with Laravel 11 and Vue.js (Inertia.js).
 
@@ -10,26 +10,11 @@ A comprehensive school management system built with Laravel 11 and Vue.js (Inert
 - **Enrollment**: Manage student enrollments in classes
 - **Classes**: Create and manage classes with multiple teachers and subjects
 - **Subjects**: Full CRUD functionality for subject management
-- **Attendance**: Track student attendance (admin and teacher can manage)
 - **Grading**: Record and manage student grades linked to assessments
 - **Assessments**: Create and manage assessments (Quiz, Assignment, Mid-Term, Final Exam) for classes
-- **Promotion Management**: Promote students between classes (individual and bulk promotions with approval workflow)
-- **Report Management**: Generate comprehensive reports including:
-  - Student Performance Reports
-  - Class Performance Reports
-  - Attendance Reports
-  - Grade Distribution Reports
-  - Teacher Workload Reports
-  - Enrollment Reports
-- **ID Card Management**: Generate and manage ID cards for students and teachers
-- **Fee Management**: Comprehensive fee and payment tracking system with:
-  - Fee creation and management (one-time and recurring fees)
-  - Payment recording and tracking
-  - Payment status management (pending, partial, paid, overdue)
-  - Fee payment history and receipts
-  - Bank transaction information tracking
-- **Announcements**: School-wide and targeted announcements (All portals, Teachers, Students, Parents)
-- **Messaging**: Communication between users with organized recipient selection
+
+
+
 - **Login Logs**: Security feature to track all user login attempts
 
 ### Portal Access
@@ -53,13 +38,7 @@ A comprehensive school management system built with Laravel 11 and Vue.js (Inert
   - Attendance records viewing
   - Grade viewing linked to assessments
   - Announcement viewing
-- **Parent Portal**: Enhanced portal with:
-  - Dashboard overview of children's information
-  - Fee payment tracking and pending payment alerts
-  - Today's schedule for children
-  - Recent fee payments history
-  - Children's classes, attendance, and grades viewing
-  - Announcement viewing
+
 
 ### Additional Features
 - **Multi-language Support**: English and Khmer language switching
