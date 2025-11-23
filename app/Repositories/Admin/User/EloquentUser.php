@@ -155,11 +155,6 @@ class EloquentUser implements UserRepository
         }
     }
 
-    public function edit(int $id)
-    {
-
-    }
-
     /**
      * Upload profile image to local storage
      *

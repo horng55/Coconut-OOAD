@@ -208,7 +208,7 @@ const handleFileChange = (event) => {
                                 <span class="text-sm text-gray-700 dark:text-gray-300">{{ role.name }}</span>
                             </label>
                             <p v-if="!roles || roles.length === 0" class="col-span-full text-sm text-gray-500 dark:text-gray-400 text-center py-2">
-                                No roles available. <Link :href="route('admin.roles.create')" class="text-purple-500 hover:text-purple-600">Create one</Link>
+                                No roles available.
                             </p>
                         </div>
                         <div v-if="form.errors.roles" class="text-red-500 text-sm mt-1">{{ form.errors.roles }}</div>

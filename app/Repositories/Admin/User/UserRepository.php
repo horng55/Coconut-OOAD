@@ -8,7 +8,7 @@ interface UserRepository
 
     public function store(array $data);
 
-    public function edit(int $id);
+    public function find(int $id);
 
     public function update(int $id, array $data);
 
