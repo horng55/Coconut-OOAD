@@ -319,32 +319,16 @@ The system includes the following main entities:
 ### Admin
 - **Full system access** with comprehensive management tools
 - **Enhanced Dashboard**: 
-  - Real-time statistics cards (teachers, students, parents, classes, enrollments, subjects, fees, attendance rate, average grades)
-  - Pending payments alert with detailed information and quick access
+  - Real-time statistics cards (teachers, students, classes, subjects, average grades)
   - Recent enrollments and announcements tracking
-  - Fee payment overview with comprehensive statistics
   - Quick actions for common tasks
   - System status monitoring
 - **User Management**: Create, edit, and manage all user types (admin, teacher, student, parent)
 - **Role Management**: Create and manage custom roles, assign roles to users
 - **Class Management**: Create classes with multiple teachers and subjects
 - **Subject Management**: Full CRUD operations for subjects
-- **Enrollment Management**: Manage student enrollments in classes
-- **Attendance Management**: View and manage all attendance records
 - **Grade Management**: View and manage all grades, create/edit grades
 - **Assessment Management**: View all assessments created by teachers
-- **Promotion Management**: Promote students between classes (individual and bulk), approve/reject promotions
-- **Report Management**: Generate and view various reports (student performance, class performance, attendance, grade distribution, teacher workload, enrollment)
-- **ID Card Management**: Generate and manage ID cards for students and teachers
-- **Fee Management**: 
-  - Create and manage fees (one-time and recurring)
-  - Record fee payments with multiple payment methods
-  - Track payment status (pending, partial, paid, overdue)
-  - View payment history and receipts
-  - Manage bank transaction information
-  - Generate payment reports
-- **Announcement Management**: Create announcements targeting all portals or specific user types
-- **Message Management**: View all messages in the system
 - **Security**: View login logs for all users
 
 ### Teacher
@@ -352,33 +336,16 @@ The system includes the following main entities:
 - **Class Management**: View assigned classes with student lists and multiple subjects
 - **Student Management**: View and manage students in assigned classes
 - **Assessment Management**: Create, edit, and delete assessments (Quiz, Assignment, Mid-Term, Final Exam) for assigned classes
-- **Attendance Management**: Record and edit attendance for students in assigned classes
 - **Grade Management**: Create and edit grades linked to assessments, with automatic validation against assessment maximum scores
-- **Announcements**: View announcements targeted to teachers
-- **Messaging**: Send and receive messages with students, parents, and other teachers
+
 
 ### Student
 - **Enhanced Dashboard**: Overview of enrolled classes, recent attendance, and grades
 - **Classes**: View enrolled classes with teachers and subjects
-- **Attendance**: View own attendance records with detailed history
 - **Grades**: View own grades linked to assessments with performance metrics
-- **Announcements**: View announcements targeted to students
-- **Messaging**: Send and receive messages with teachers, parents, and other students
 
-### Parent
-- **Enhanced Dashboard**: 
-  - Overview of children's classes, attendance, and grades
-  - Fee payment tracking with pending payment alerts
-  - Today's schedule for children
-  - Recent fee payments history
-  - Statistics cards for children's academic performance
-- **Read-only Access**: View children's information (cannot edit)
-- **Children's Classes**: View all classes where children are enrolled
-- **Children's Attendance**: View attendance records for all children
-- **Children's Grades**: View grades for all children, linked to assessments
-- **Fee Payments**: View fee payment history and pending payments for children
-- **Announcements**: View announcements targeted to parents
-- **Messaging**: Send and receive messages with teachers and administrators
+
+
 
 ## Environment Variables
 
@@ -401,50 +368,6 @@ Key environment variables (see `.env.example` for full list):
 - Student scores are automatically validated against assessment maximum scores
 - Admin can view all assessments across the system
 
-### Promotion Management
-- Individual student promotions with approval workflow
-- Bulk promotion feature to promote entire classes at once
-- Automatic enrollment transfer when promotions are approved
-- Track promotion history with academic year transitions
-- Support for different promotion types: Automatic, Manual, Conditional, Repeated
-- Class capacity validation before promotion
-
-### Report Management
-- **Student Performance Reports**: Detailed academic performance and attendance for individual students
-- **Class Performance Reports**: Overall class performance with student rankings and statistics
-- **Attendance Reports**: Attendance statistics and records with filtering options
-- **Grade Distribution Reports**: Grade distribution analysis with statistics
-- **Teacher Workload Reports**: Teacher workload and class assignments overview
-- **Enrollment Reports**: Enrollment statistics by class and academic year
-- All reports are saved with parameters for future reference
-- Filter and search through report history
-
-### ID Card Management
-- Generate ID cards for students and teachers
-- Track card numbers, issue dates, expiry dates, and status
-- Photo upload support for ID cards
-- Support for both student and teacher card types
-
-### Fee Management
-- **Fee Creation**: Create one-time or recurring fees with flexible settings
-  - Fee types: Tuition, Library, Sports, Laboratory, etc.
-  - Class-specific or general fees
-  - Due date management
-  - Recurring fee support (monthly, quarterly, yearly)
-- **Payment Recording**: Record payments with comprehensive details
-  - Multiple payment methods (cash, bank transfer, check, online)
-  - Transaction ID and receipt number tracking
-  - Bank information storage
-  - Payment date and amount tracking
-- **Payment Status Management**: 
-  - Track payment status (pending, partial, paid, overdue)
-  - Automatic remaining amount calculation
-  - Payment history tracking
-- **Payment Reports**: 
-  - View all payments with filtering options
-  - Payment statistics and overview
-  - Individual payment details with full transaction history
-- **Integration**: Fee information integrated into parent and admin dashboards
 
 ### Role Management
 - Create custom roles with descriptive names and slugs
@@ -457,20 +380,12 @@ Key environment variables (see `.env.example` for full list):
 - Classes can have multiple subjects
 - Flexible class management for team teaching scenarios
 
-### Enhanced Announcements
-- Target specific portals: All, Teachers, Students, or Parents
-- JSON-based target audience for flexible filtering
-- Real-time visibility across all targeted portals
 
 ### Security Features
 - Login logging for all user types
 - Deduplication logic to prevent duplicate log entries
 - Track successful and failed login attempts with IP addresses and timestamps
 
-### Language Support
-- English and Khmer (ភាសាខ្មែរ) language switching
-- Language preference stored in user session
-- All UI elements support both languages
 
 ## Documentation
 
